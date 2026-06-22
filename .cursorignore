@@ -1,0 +1,14 @@
+# Turborepo & Build Artifacts
+.turbo/
+.next/
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Version Control & OS
+.git/
+.DS_Store
