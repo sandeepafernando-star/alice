@@ -6,24 +6,39 @@ globs: **/*
 # Global Workspace Rules
 
 ## Execution & Coordination
+
 1. **Parallel Execution**: Always prompt the developer to use `pnpm dev` from the root directory to boot the monorepo concurrently.
 2. **Speed & Consistency**: Prioritize working code over overly granular refactors to hit delivery milestones.
 3. **Commit Compliance**: Remind team members to execute `pnpm commit` when changes are complete to prevent broken git hook exceptions.
 4. When writing or editing `*.ts` or `*.tsx`, fix all lint/format issues before finishing if `eslint.config.ts` rules exist.
 
 ### TypeScript
+
 - Do not use `any` (`@typescript-eslint/no-explicit-any`).
 - Do not add `eslint-disable` for lint rules without a brief justification.
 
 ### React (TSX)
+
 - Destructure props in the function parameter list.
 - Follow Rules of Hooks (`eslint-plugin-react-hooks`).
 - Respect `react-refresh/only-export-components` where applicable.
 
 ### Before you finish
+
 - Run ESLint on touched files and resolve errors (and warnings you introduced).
 
 ## Error Handling Patterns (Mandatory)
+
 - Never use local try/catch blocks in Express controller functions.
 - Wrap all asynchronous express routes with the `catchAsync` utility function.
 - To return an explicit API failure, throw an instance of `AppError(message, statusCode)`.
+
+## Vercel Deployment Rules
+
+- The backend app uses Serverless Functions. Never use WebSockets (`ws://`) or local in-memory storage arrays as they will clear between requests.
+- All routing changes to the API must align with the paths specified in `apps/api/vercel.json`.
+
+## GitHub Actions Actions Pipeline Rule
+
+- Workspaces must resolve their testing cycles locally using `pnpm turbo test` seamlessly.
+- Never write code changes that expect automated Vercel branch builds outside the explicit `deploy.yml` pipeline framework.
