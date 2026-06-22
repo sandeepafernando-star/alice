@@ -1,0 +1,117 @@
+name: Continuous Integration & Vercel deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+jobs:
+  validate_and_test:
+    name: Code Validation and Quality Controls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Pnpm Core Engine
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Initialize Structured Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install workspace Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint Codebase via Turborepo
+        run: pnpm turbo lint
+
+      - name: Run Test Suite via Turborepo
+        run: pnpm turbo test
+
+  deploy_backend_api:
+    name: Deploy Express API to Vercel
+    needs: validate_and_test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Pnpm Core Engine
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Initialize Structured Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install Workspace Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Global Vercel CLI Execution Agent
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Variables
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+
+      - name: Build Local App Context via Vercel CLI
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+
+      - name: Execute Controlled Production Deployment
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+
+  deploy_frontend_web:
+    name: Deploy Web Frontend to Vercel
+    needs: validate_and_test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Pnpm Core Engine
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Initialize Structured Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install Workspace Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Global Vercel CLI Execution Agent
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Variables
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+
+      - name: Build Local App Context via Vercel CLI
+        run: vercel build --prod --token=${{ secrets.VERCEL_PROJECT_ID_WEB }}
+
+      - name: Execute Controlled Production Deployment
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_PROJECT_ID_WEB }}
