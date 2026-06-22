@@ -1,0 +1,23 @@
+# Monorepo Workspace Rules
+
+## Tech Stack
+
+- Build System: Turborepo
+- Backend: Express.js (TypeScript, Node.js)
+- Commit Standard: Conventional Commits (via Commitizen/Commitlint)
+
+## Codebase Guidelines
+
+1. **Monorepo Architecture**: Always check if code should be placed in a shared package (under `packages/*`) or an application (under `apps/*`).
+2. **Task Execution**: Do not run individual app scripts manually. Always use `pnpm turbo run <task>` (or your equivalent package manager syntax) from the root.
+3. **Backend Patterns**: When writing Express code, use strict TypeScript, explicit Request/Response types, and separate business logic from routes. 
+i.e. 
+- Using individual routers `app.use('/users', userRouter)`
+- Using services with repository pattern with following folder structure
+```
+- users
+  - users.router.ts
+  - users.service.ts
+  - users.repository.ts
+```
+4. **Imports**: Keep dependencies local to the package/app `package.json` where they are used.

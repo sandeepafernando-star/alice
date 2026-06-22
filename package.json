@@ -12,6 +12,17 @@
     "commit": "cz",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "apps/web/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter web lint --"
+    ],
+    "apps/api/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter api lint --"
+    ],
+    "packages/ui/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter @repo/ui lint --"
+    ]
+  },
   "config": {
     "commitizen": {
       "path": "@commitlint/cz-commitlint"
@@ -24,6 +35,7 @@
     "commitizen": "^4.3.2",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.7.4",
     "turbo": "^2.9.18",
     "typescript": "5.9.2"
