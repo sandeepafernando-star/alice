@@ -1,17 +1,11 @@
 {
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
-<<<<<<< HEAD
     "paths": {
       "@repo/ui/*": ["./src/*"]
     },
     "rootDir": "src",
     "outDir": "dist"
-=======
-    "outDir": "dist",
-    "rootDir": "./src",
-    "strictNullChecks": true
->>>>>>> 7ee8e54 (feat(added supabase as database): added supabase with configurations for ssr)
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
