@@ -13,12 +13,14 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@clerk/express": "^2.1.31",
     "cors": "^2.8.5",
     "detect-port": "^2.1.0",
-    "express": "^4.19.0",
-    "zod": "^4.4.3"
+    "express": "^4.19.0"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@eslint/js": "^9.39.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
