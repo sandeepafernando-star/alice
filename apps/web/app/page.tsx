@@ -1,7 +1,7 @@
 import { SignInButton } from "@clerk/nextjs";
 import { Button } from '@repo/ui/components/ui/button';
 
-export default function HomePageComponent() {
+export function HomePageComponent() {
   return (
     <div>
       <h1>Welcome</h1>
