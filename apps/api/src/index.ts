@@ -1,16 +1,18 @@
 import express from 'express'
 import cors from 'cors'
+import { startServer } from './server';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (_, res) => {
-    res.json({ status: 'ok', timestamp: new Date() });
+app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok', runtime: 'express' });
 });
 
-app.listen(PORT, () => {
-    console.log(`info. api backend running on http://localhost:${PORT}`);
+startServer().then((port) => {
+    app.listen(port, () => {
+        console.log(`info. API backend actively listening on http://localhost:${port}`);
+    });
 });
