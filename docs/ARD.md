@@ -1,17 +1,17 @@
 # Agile Requirements Document (ARD)
 
-## Alice — Project Management Platform
+## Jira Teams — Project Management Platform
 
-**Project:** Alice  
-**Version:** 1.0  
+**Project:** Alice (Jira Teams)  
+**Version:** 1.1  
 **Last Updated:** June 23, 2026  
-**Status:** Early development
+**Status:** In development
 
 ## 1. Executive Summary
 
-Alice is a Jira-inspired project management application. Teams will use it to organize work into projects and track issues such as tasks, bugs, and stories.
+Jira Teams is a Jira-inspired project management application described in the README as a cost-effective alternative to Jira. Teams will use it to organize work into projects and track issues such as tasks, bugs, and stories.
 
-The project is a Turborepo monorepo with a Next.js frontend (`apps/web`), an Express API backend (`apps/api`), and a shared UI package (`packages/ui`). Supabase (PostgreSQL) is the database.
+The project is a Turborepo monorepo with a Next.js frontend (`apps/web`), an Express API backend (`apps/api`), and a shared UI package (`packages/ui`). Authentication is handled by Clerk. Supabase (PostgreSQL) is the planned database for application data.
 
 ## 2. Product Vision
 
@@ -19,46 +19,69 @@ The project is a Turborepo monorepo with a Next.js frontend (`apps/web`), an Exp
 
 **Goals:**
 
-- Authenticated users can manage projects and issues in one place.
-- Role-based access controls who can view and change data.
+- Authenticated users can sign in and access role-based dashboards.
+- Role-based access controls who can view admin, manager, and member areas.
 - A responsive web UI built with shared components from `@repo/ui`.
 - Automated lint, test, and deployment pipelines on merge to `main`.
 
 ## 3. Current Scope
 
-The following exists in the codebase today:
+**Implemented**
 
 - Monorepo setup with Turborepo and pnpm workspaces.
-- Express API with a `GET /api/health` endpoint.
-- Next.js home page at `/` with a welcome card.
-- Login page at `/login` with a static login form (email, password, Google button — not yet connected to auth).
+- Clerk authentication on the web app (`ClerkProvider`, `proxy.ts` middleware).
+- Clerk authentication on the API (`clerkMiddleware`, `requireApiAuth` middleware).
+- Home page at `/` with "Jira Teams" branding and Clerk sign-in, sign-out, and user controls.
+- Role-based dashboard routing:
+  - `/dashboard` — reads the user's Clerk `publicMetadata.role` and redirects to the correct dashboard.
+  - `/admin` — accessible only when role is `admin`.
+  - `/manager` — accessible only when role is `manager`.
+  - `/member` — accessible only when role is `member`.
+- Express API with modular route structure under `src/routes/api/`.
+- `GET /api/health` — public health check.
+- `GET /api/users/api/secure` — protected endpoint requiring a valid Clerk token.
 - Shared UI components: Button, Card, Field, Input, Label, Separator.
 - GitHub Actions workflow for lint, test, and Vercel deployment.
 - Conventional Commits enforced via Husky, Commitlint, and Commitizen.
+- Dev Container configuration (`.devcontainer/devcontainer.json`).
+- Root script `pnpm ui:add` for adding shadcn components to `@repo/ui`.
 
-The following is not yet implemented:
+**Not yet implemented**
 
-- User authentication and session management.
 - Supabase database schema, migrations, and API data access.
 - Project and issue CRUD.
-- Role-based permissions.
+- Persistent role assignment UI (roles are read from Clerk `publicMetadata.role`).
 
 ## 4. User Roles
 
-The project is intended to support three roles:
+Roles are stored in Clerk user `publicMetadata.role`:
 
-- **ADMINISTRATOR** — Full access; manage users, roles, and all projects.
-- **PROJECT_MANAGER** — Create and manage projects, issues, and assignments within assigned projects.
-- **MEMBER** — View assigned projects; create and update issues; add comments on accessible issues.
+- **admin** — Access to `/admin` dashboard. Full administrative access (intended).
+- **manager** — Access to `/manager` dashboard. Project management access (intended).
+- **member** — Access to `/member` dashboard. Standard team member access (intended).
+
+Users without a matching role are redirected to `/` when visiting a role-specific page.
 
 ## 5. User Stories
 
 ### Authentication
 
-- **AUTH-1:** As a user, I want to sign in with email and password so that I can access my workspace.
-  - Login page is available at `/login`.
-  - Form includes email, password, and a Google login option.
-  - Status: UI only; backend auth not wired.
+- **AUTH-1:** As a user, I want to sign in so that I can access my workspace.
+  - Clerk `SignInButton` and `UserButton` are available on the home page.
+  - Status: Done.
+
+- **AUTH-2:** As a signed-in user, I want to be routed to the correct dashboard based on my role.
+  - `/dashboard` redirects to `/admin`, `/manager`, or `/member` based on `publicMetadata.role`.
+  - Status: Done.
+
+- **AUTH-3:** As a user, I want role-specific pages to block unauthorized access.
+  - Each role page checks the user's role and redirects to `/` if it does not match.
+  - Status: Done.
+
+- **AUTH-4:** As a client, I want to call protected API endpoints with my auth token.
+  - `GET /api/users/api/secure` returns a welcome message when a valid Clerk token is provided.
+  - Returns 401 when unauthenticated.
+  - Status: Done.
 
 ### Platform
 
@@ -82,11 +105,13 @@ The project is intended to support three roles:
 
 ## 6. Functional Requirements
 
-- **FR-1:** The system shall store application data in Supabase (PostgreSQL).
-- **FR-2:** The system shall expose a REST API from `apps/api` consumed by the Next.js frontend.
-- **FR-3:** The system shall provide a web UI at `apps/web` using shared `@repo/ui` components.
-- **FR-4:** The API shall expose a health check at `GET /api/health`.
-- **FR-5:** The login page shall be reachable at `/login`.
+- **FR-1:** The system shall authenticate users via Clerk on both the web app and API.
+- **FR-2:** The system shall route authenticated users to role-based dashboards (`admin`, `manager`, `member`).
+- **FR-3:** The system shall store application data in Supabase (PostgreSQL) once implemented.
+- **FR-4:** The system shall expose a REST API from `apps/api` consumed by the Next.js frontend.
+- **FR-5:** The system shall provide a web UI at `apps/web` using shared `@repo/ui` components.
+- **FR-6:** The API shall expose a public health check at `GET /api/health`.
+- **FR-7:** The API shall protect endpoints using `requireApiAuth` middleware.
 
 ## 7. Non-Functional Requirements
 
@@ -99,7 +124,8 @@ The project is intended to support three roles:
 
 ## 8. Assumptions & Dependencies
 
-- **Database:** Supabase (PostgreSQL)
+- **Authentication:** Clerk (`@clerk/nextjs` on web, `@clerk/express` on API)
+- **Database:** Supabase (PostgreSQL) — planned, not yet integrated
 - **Hosting:** Vercel (separate projects for `web` and `api`)
 - **Package manager:** pnpm 9.x
 - **Node.js:** ≥ 18 (CI uses Node 20)
@@ -113,6 +139,8 @@ A story is done when:
 
 1. Acceptance criteria are met.
 2. UI uses shared components from `@repo/ui` where applicable.
-3. `pnpm turbo lint` and `pnpm turbo test` pass.
-4. Changes are committed with Conventional Commits (`pnpm commit`).
-5. CI passes and deploys successfully on merge to `main`.
+3. Protected API routes use `requireApiAuth` where required.
+4. Role pages enforce access via `getUserRole()` from `apps/web/lib/auth.ts`.
+5. `pnpm turbo lint` and `pnpm turbo test` pass.
+6. Changes are committed with Conventional Commits (`pnpm commit`).
+7. CI passes and deploys successfully on merge to `main`.
