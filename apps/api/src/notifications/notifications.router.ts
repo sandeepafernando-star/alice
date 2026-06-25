@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { notificationsService } from "./notifications.service";
 
-export const notificationsRouter = Router();
+export const notificationsRouter: Router = Router();
 
 const sendSchema = z.object({
   subscriberId: z.string().min(1),
