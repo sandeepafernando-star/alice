@@ -4,7 +4,8 @@ export const proxy = clerkMiddleware();
 
 export const config = {
   matcher: [
-    "/((?!_next|.*\\..*).*)",
-    "/"
+    // "/((?!_next|.*\\..*).*)",
+    // "/"
+    "/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)",
   ],
 };
