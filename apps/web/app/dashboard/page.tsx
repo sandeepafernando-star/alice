@@ -1,5 +1,7 @@
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { DashboardOverview } from '@/components/dashboard/dashboard-overview';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -8,19 +10,12 @@ export default async function DashboardPage() {
     redirect('/');
   }
 
-  const client = await clerkClient();
-
-  const user = await client.users.getUser(userId);
-
-  const role = user.publicMetadata.role;
-
-  if (role === 'admin') {
-    redirect('/admin');
-  }
-
-  if (role === 'manager') {
-    redirect('/manager');
-  }
-
-  redirect('/member');
+  return (
+    <DashboardShell
+      title="Dashboard"
+      description="Track your work and team activity at a glance."
+    >
+      <DashboardOverview />
+    </DashboardShell>
+  );
 }

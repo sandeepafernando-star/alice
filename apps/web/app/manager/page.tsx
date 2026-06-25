@@ -1,16 +1,14 @@
-// export default function ManagerDashboard() {
-//   return <h1>Manager Dashboard</h1>;
-// }
-
-import { redirect } from 'next/navigation';
-import { getUserRole } from '../../lib/auth';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 
 export default async function ManagerDashboard() {
-  const role = await getUserRole();
-
-  if (role !== 'manager') {
-    redirect('/');
-  }
-
-  return <h1>Manager Dashboard</h1>;
+  return (
+    <DashboardShell
+      title="Team"
+      description="Manage your team's workload and sprints."
+    >
+      <div className="text-muted-foreground flex h-40 items-center justify-center rounded-lg border border-dashed text-sm">
+        Manager workspace — content coming soon.
+      </div>
+    </DashboardShell>
+  );
 }

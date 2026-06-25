@@ -27,6 +27,10 @@ globs: **/*
 
 - Run ESLint on touched files and resolve errors (and warnings you introduced).
 
+## UI Architecture
+
+- For frontend UI work, follow `.cursor/rules/04-ui-design-expert.mdc` (shared `@repo/ui` shadcn components, theme tokens, composition patterns).
+
 ## Error Handling Patterns (Mandatory)
 
 - Never use local try/catch blocks in Express controller functions.

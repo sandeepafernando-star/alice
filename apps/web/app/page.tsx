@@ -1,6 +1,31 @@
-import { SignInButton, UserButton, SignOutButton } from '@clerk/nextjs';
+import { Show, SignInButton, UserButton, SignUpButton } from '@clerk/nextjs';
 import { Button } from '@repo/ui/components/ui/button';
+import Link from 'next/link';
 import './globals.css';
+
+const AuthHeader = () => {
+  return (
+    <section className="flex items-center gap-4">
+      <Show when="signed-out">
+        <SignInButton mode="modal">
+          <Button variant="outline" className="cursor-pointer">
+            Sign In
+          </Button>
+        </SignInButton>
+
+        <SignUpButton mode="modal">
+          <Button variant="outline" className="cursor-pointer">
+            Sign Up
+          </Button>
+        </SignUpButton>
+      </Show>
+
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </section>
+  );
+};
 
 export default function Home() {
   return (
@@ -10,18 +35,10 @@ export default function Home() {
         <h2 className="text-center text-4xl">A Jira Clone</h2>
       </section>
       <section className="flex gap-4 p-4">
-        <Button variant="outline" className="cursor-pointer">
-          Sign Up
+        <Button asChild className="cursor-pointer">
+          <Link href="/dashboard">Dashboard</Link>
         </Button>
-        <Button className="cursor-pointer">Dashboard</Button>
-      </section>
-      <section>
-        <SignOutButton>
-          <SignInButton />
-        </SignOutButton>
-        <SignInButton>
-          <UserButton />
-        </SignInButton>
+        <AuthHeader />
       </section>
     </main>
   );

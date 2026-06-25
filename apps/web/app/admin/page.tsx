@@ -1,16 +1,14 @@
-// export default function AdminDashboard() {
-//   return <h1>Admin Dashboard</h1>;
-// }
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 
-import { redirect } from 'next/navigation';
-import { getUserRole } from '../../lib/auth';
-
-export default async function AdminDashboard() {
-  const role = await getUserRole();
-
-  if (role !== 'admin') {
-    redirect('/');
-  }
-
-  return <h1>Admin Dashboard</h1>;
+export default async function AdminPage() {
+  return (
+    <DashboardShell
+      title="Admin"
+      description="Organization settings and project administration."
+    >
+      <div className="text-muted-foreground flex h-40 items-center justify-center rounded-lg border border-dashed text-sm">
+        Admin workspace — content coming soon.
+      </div>
+    </DashboardShell>
+  );
 }
