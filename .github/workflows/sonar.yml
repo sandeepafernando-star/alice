@@ -1,4 +1,4 @@
-name: SonarCloud
+name: SonarCloud Code Quality Gate
 
 on:
   push:

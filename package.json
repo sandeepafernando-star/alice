@@ -6,7 +6,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write --cache \"**/*.{ts,tsx,md,js,jsx,json,css}\"",
-    "check-types": "turbo run check-types",
+    "typescheck": "turbo run typescheck",
     "web": "pnpm --filter web",
     "api": "pnpm --filter api",
     "ui": "pnpm --filter ./packages/ui",
