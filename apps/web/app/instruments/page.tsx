@@ -1,38 +1,52 @@
-import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { Skeleton } from '@repo/ui/components/ui/skeleton';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { createClient } from '../../lib/db';
+import { getUser } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 function InstrumentsSkeleton() {
   return (
     <div className="space-y-3">
-      <Skeleton className="h-4 w-48" />
-      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-48 w-48" />
     </div>
   );
 }
 
 async function InstrumentsData() {
-  const supabase = createClient;
-  
-  const { data: instruments } = await supabase.from('instruments').select();
+  const supabase = await createClient();
+
+  // 1. Log the session status to confirm the server sees your user
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  console.log('Is Server authenticated?', !!session);
+
+  // 2. Fetch data and capture any hidden errors
+  const { data: instruments, error } = await supabase
+    .from('instruments')
+    .select();
+
+  if (error) {
+    console.error('Supabase Database Error:', error.message);
+    return <p>Error loading data: {error.message}</p>;
+  }
 
   return <pre>{JSON.stringify(instruments, null, 2)}</pre>;
 }
 
 export default async function InstrumentsPage() {
-  const { userId } = await auth();
+  const user = await getUser();
 
-  if (!userId) {
-    redirect('/');
+  if (!user) {
+    redirect('/login');
   }
 
   return (
     <DashboardShell
       title="Instruments"
       description="Track your favourite instruments."
+      user={user}
     >
       <Suspense fallback={<InstrumentsSkeleton />}>
         <InstrumentsData />

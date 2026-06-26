@@ -14,6 +14,7 @@ export default async function DashboardPage() {
     <DashboardShell
       title="Dashboard"
       description="Track your work and team activity at a glance."
+      user={user}
     >
       <DashboardOverview />
     </DashboardShell>

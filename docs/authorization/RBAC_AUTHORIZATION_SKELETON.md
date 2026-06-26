@@ -80,4 +80,3 @@ This document captures the agreed direction:
 - Where should source-of-truth RBAC data live first (Supabase table design)?
 - Do we need temporary role seeding for local development?
 - What is the first minimal permission set needed for dashboard and role routes?
-

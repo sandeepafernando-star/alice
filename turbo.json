@@ -10,7 +10,13 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "NOVU_SECRET_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_ANON_KEY"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -18,8 +24,8 @@
     "test": {
       "dependsOn": ["build"]
     },
-    "typescheck": {
-      "dependsOn": ["^typescheck"]
+    "checktypes": {
+      "dependsOn": ["^checktypes"]
     }
   }
 }

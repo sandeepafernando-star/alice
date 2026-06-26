@@ -42,7 +42,9 @@ export function DashboardOverview() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm">{stat.description}</p>
+              <p className="text-muted-foreground text-sm">
+                {stat.description}
+              </p>
             </CardContent>
           </Card>
         ))}

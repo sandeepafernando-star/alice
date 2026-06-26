@@ -8,7 +8,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
 });
 
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
     console.log('Received file:', file);

@@ -15,6 +15,7 @@ export default async function MemberDashboard() {
     <DashboardShell
       title="My Work"
       description="Issues and tasks assigned to you."
+      user={user}
     >
       <div className="text-muted-foreground flex h-40 items-center justify-center rounded-lg border border-dashed text-sm">
         Member workspace — content coming soon.
