@@ -45,7 +45,7 @@ pnpm format
 ### Types checking
 
 ```bash
-pnpm check-types
+pnpm checktypes
 ```
 
 ### Building the app

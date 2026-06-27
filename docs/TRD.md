@@ -242,7 +242,7 @@ pnpm api dev              # api only
 pnpm web dev              # web only
 pnpm turbo lint           # lint all packages
 pnpm turbo test           # run all tests
-pnpm turbo check-types
+pnpm turbo checktypes
 pnpm turbo build
 pnpm ui:add <component>   # add shadcn component to @repo/ui
 pnpm commit               # conventional commit (interactive)

@@ -13,3 +13,5 @@ if (!process.env.PORT) {
     'info. remote cloud system environment detected. Utilizing native dashboard secrets.'
   );
 }
+
+import './env';

@@ -1,14 +1,25 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '../../lib/auth';
+import { getUser } from '@/lib/auth';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 
-export default async function AdminDashboard() {
+export default async function AdminPage() {
   const user = await getUser();
 
   if (!user) {
     redirect('/login');
   }
 
-  // TODO: enforce custom RBAC role check once application roles are stored in the database.
+  /** Custom RBAC: load role from application database once implemented. */
 
-  return <h1>Admin Dashboard</h1>;
+  return (
+    <DashboardShell
+      title="Admin"
+      description="Organization settings and project administration."
+      user={user}
+    >
+      <div className="text-muted-foreground flex h-40 items-center justify-center rounded-lg border border-dashed text-sm">
+        Admin workspace — content coming soon.
+      </div>
+    </DashboardShell>
+  );
 }

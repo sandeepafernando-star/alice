@@ -10,10 +10,13 @@ export default function UploadPage() {
     if (!file) return;
     const formData = new FormData();
     formData.append('file', file);
-    const response = await fetch('http://localhost:3001/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/files`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
 
     const data = await response.json();
     console.log(data);
