@@ -53,12 +53,7 @@ jobs:
             - Dsonar.projectKey=lizardkingLK_alice
             - Dsonar.organization=lizardkinglk
             - Dsonar.host.url=https://sonarcloud.io
-
-      - name: Verify SonarCloud Quality Gate Status
-        uses: sonarsource/sonarcloud-quality-gate-action@v1.1.0
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            - Dsonar.qualitygate.wait=true
 
   deploy_backend_api:
     name: Deploy Express API to Vercel
