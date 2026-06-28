@@ -1,33 +1,40 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import dotenv from 'dotenv';
 import { z } from 'zod';
 
+const packageRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..'
+);
+
+dotenv.config({ path: path.join(packageRoot, '.env') });
+
 const serverSchema = z.object({
-  PORT: z.coerce.number(),
-  FRONTEND_URL: z.string().min(1),
+  DATABASE_URL: z.string().min(1),
+  DIRECT_URL: z.string().min(1),
   SUPABASE_URL: z.url(),
-  SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  NOVU_SECRET_KEY: z.string().min(1),
 });
 
 type EnvSchemaType = z.infer<typeof serverSchema>;
 
 const mock: EnvSchemaType = {
-  PORT: 5000,
-  FRONTEND_URL: 'http://localhost:3000',
+  DATABASE_URL: 'postgresql://localhost:5432/postgres',
+  DIRECT_URL: 'postgresql://localhost:5432/postgres',
   SUPABASE_URL: 'https://supabase.co',
-  SUPABASE_ANON_KEY: 'mock',
   SUPABASE_SERVICE_ROLE_KEY: 'mock',
-  NOVU_SECRET_KEY: 'mock',
 };
 
 const processEnv = {
-  PORT: process.env.PORT,
-  FRONTEND_URL: process.env.FRONTEND_URL,
+  DATABASE_URL: process.env.DATABASE_URL,
+  DIRECT_URL: process.env.DIRECT_URL,
   SUPABASE_URL: process.env.SUPABASE_URL,
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  NOVU_SECRET_KEY: process.env.NOVU_SECRET_KEY,
 };
+
+const parsed = serverSchema.safeParse(processEnv);
 
 let data: EnvSchemaType;
 
@@ -37,17 +44,14 @@ if (process.env.GITHUB_ACTIONS === 'true') {
   );
   data = mock;
 } else {
-  const parsed = serverSchema.safeParse(processEnv);
-
   if (parsed.success === false) {
     console.error(
       '\x1b[31m%s\x1b[0m',
       'error. invalid or missing environment variables:\n',
       z.treeifyError(parsed.error)
     );
-
     throw new Error(
-      'error. build terminated due to invalid environment variables.'
+      'error. db package terminated due to invalid environment variables.'
     );
   }
 
