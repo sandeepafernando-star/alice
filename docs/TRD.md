@@ -3,8 +3,8 @@
 ## Jira Teams — Project Management Platform
 
 **Project:** Alice (Jira Teams)  
-**Version:** 1.2  
-**Last Updated:** June 28, 2026  
+**Version:** 1.3  
+**Last Updated:** June 30, 2026  
 **Status:** In development
 
 ## 1. Purpose
@@ -45,10 +45,19 @@ Both apps deploy to Vercel. The API runs as Vercel Serverless Functions. Protect
 **apps/web**
 
 - `app/page.tsx` — home page with auth controls
+- `app/about/page.tsx`, `app/contact/page.tsx` — public marketing pages
 - `app/login/page.tsx` — email/password sign-in form
 - `app/signup/page.tsx` — registration form
 - `app/auth/actions.ts` — Server Actions: `login`, `signUp`, `signOut`
 - `app/dashboard/page.tsx` — authenticated dashboard hub
+- `app/dashboard/layout.tsx` — dashboard segment layout with `robots: noindex`
+- `app/admin/layout.tsx`, `app/manager/layout.tsx`, `app/member/layout.tsx` — role dashboard layouts with `robots: noindex`
+- `app/instruments/layout.tsx`, `app/files/layout.tsx` — internal route layouts with `robots: noindex`
+- `app/robots.ts` — `/robots.txt` (crawler allow/disallow rules)
+- `app/sitemap.ts` — `/sitemap.xml` (public routes only)
+- `app/shared/values.ts` — `baseUrl`, `appTitle`, `appDescription` for metadata
+- `app/config/fonts.ts` — font configuration for root layout
+- `app/favicon.ico`, `app/icon.svg`, `app/apple-icon.png`, `app/opengraph-image.png` — file-based metadata assets
 - `app/admin/page.tsx`, `app/manager/page.tsx`, `app/member/page.tsx` — role dashboards (RBAC guards planned)
 - `app/instruments/page.tsx` — typed Supabase data example
 - `lib/auth.ts` — `getUser()` via `supabase.auth.getUser()`
@@ -85,7 +94,7 @@ Both apps deploy to Vercel. The API runs as Vercel Serverless Functions. Protect
 **packages/eslint-config** — shared ESLint configs  
 **packages/typescript-config** — shared TypeScript configs
 
-See also: `docs/DATABASE.md` (operational runbook), `docs/DEBUGGING.md` (IDE debug configs), `docs/authorization/` (auth and RBAC plans).
+See also: `docs/guidelines/DATABASE.md` (operational runbook), `docs/guidelines/DEBUGGING.md` (IDE debug configs), `docs/guidelines/SEO.md` (search metadata and crawler policy), `docs/authorization/` (auth and RBAC plans).
 
 ## 4. Technology Stack
 
@@ -184,11 +193,11 @@ Supabase (PostgreSQL) stores application data. Identity uses Supabase Auth. Stru
 
 ### Package responsibilities
 
-| Package | Role |
-|---------|------|
-| `@repo/db` | Prisma schema, SQL migrations, seeds, type-generation scripts, env validation |
-| `@repo/types` | Generated Supabase `Database` types only (no Prisma client types) |
-| `apps/web`, `apps/api` | Supabase SDK for reads/writes; import `@repo/types` for typing only |
+| Package                | Role                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `@repo/db`             | Prisma schema, SQL migrations, seeds, type-generation scripts, env validation |
+| `@repo/types`          | Generated Supabase `Database` types only (no Prisma client types)             |
+| `apps/web`, `apps/api` | Supabase SDK for reads/writes; import `@repo/types` for typing only           |
 
 Apps must not import `@repo/db`. Prisma is a migration and data-engineering tool, not the application ORM.
 
@@ -218,12 +227,12 @@ Apps must not import `@repo/db`. Prisma is a migration and data-engineering tool
 
 ### Validation and status checks
 
-| Command | Purpose | DB connection |
-|---------|---------|---------------|
-| `pnpm db validate` | `prisma validate` — schema syntax and consistency | No |
-| `pnpm db checktypes` | Zod env check + TypeScript on db package | No (env mock in CI) |
-| `pnpm db migrate:status` | Pending vs applied migrations | Yes (`DIRECT_URL`) |
-| `pnpm db migrate:deploy` | Apply pending migrations | Yes (`DIRECT_URL`) |
+| Command                  | Purpose                                           | DB connection       |
+| ------------------------ | ------------------------------------------------- | ------------------- |
+| `pnpm db validate`       | `prisma validate` — schema syntax and consistency | No                  |
+| `pnpm db checktypes`     | Zod env check + TypeScript on db package          | No (env mock in CI) |
+| `pnpm db migrate:status` | Pending vs applied migrations                     | Yes (`DIRECT_URL`)  |
+| `pnpm db migrate:deploy` | Apply pending migrations                          | Yes (`DIRECT_URL`)  |
 
 Env vars for `@repo/db` are validated in `packages/db/src/env.ts` (Zod). CI skips strict env validation when `GITHUB_ACTIONS=true`.
 
@@ -239,7 +248,6 @@ Application-level Supabase vars remain in `apps/web/sample.env` and `apps/api/sa
 ### Single-database constraint
 
 One Supabase project serves both development and production. Migrations must be additive. Seeds must remain idempotent. Avoid destructive `db push` or truncate-and-reload patterns.
-
 
 ## 8. API
 
@@ -275,11 +283,33 @@ One Supabase project serves both development and production. Migrations must be 
 **Routes**
 
 - `/` — home page ("Jira Teams") with Sign In / Sign Up controls
+- `/about`, `/contact` — public marketing pages
 - `/login` — email/password sign-in (Server Action)
 - `/signup` — registration (Server Action)
 - `/dashboard` — authenticated dashboard hub
 - `/admin`, `/manager`, `/member` — role dashboards (auth required; RBAC guards planned)
 - `/instruments` — example typed Supabase query page
+- `/files` — file upload utility (authenticated)
+
+### 9.1 SEO and crawler policy
+
+Public pages are discoverable via `sitemap.ts` and default root metadata. Authenticated, role-restricted, and internal routes are excluded from indexing using a two-layer policy:
+
+1. **`robots.ts`** — `allow: '/'`; `disallow` for `/dashboard`, `/admin`, `/manager`, `/member`, `/instruments`, `/files`, and query-string URLs (`/*?*`).
+2. **Route metadata** — forbidden segments export `robots: { index: false, follow: false }` in their `layout.tsx`.
+
+**Central config:** `apps/web/app/shared/values.ts` (`baseUrl`, `appTitle`, `appTitleTemplate`, `appDescription`).
+
+**Metadata routes:**
+
+- `GET /robots.txt` — from `app/robots.ts`
+- `GET /sitemap.xml` — from `app/sitemap.ts` (currently `/`, `/about`, `/contact`, `/login`, `/signup`)
+
+**File-based assets:** `favicon.ico`, `icon.svg`, `apple-icon.png`, `opengraph-image.png` under `app/`.
+
+**Forbidden from sitemap and crawlers:** `/dashboard`, `/admin`, `/manager`, `/member`, `/instruments`, `/files`, and query-string URLs.
+
+Operational guide: `docs/guidelines/SEO.md`. Agent rules: `.cursor/rules/06-seo-optimizer.mdc`.
 
 **Shared UI**
 
@@ -389,6 +419,8 @@ pnpm commit               # conventional commit (interactive)
 - Dev Container configuration
 - ESLint, Prettier, Husky, Commitlint, Commitizen
 - GitHub Actions CI and Vercel deployment
+- SEO metadata (root layout, file-based icons/OG image, `robots.ts`, `sitemap.ts`)
+- Crawler exclusion for protected routes (`robots.ts` disallow + layout `noindex` on `/dashboard`, `/admin`, `/manager`, `/member`, `/instruments`, `/files`)
 
 **Not yet implemented**
 
