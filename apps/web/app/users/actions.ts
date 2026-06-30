@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getDbUser } from '../../lib/auth';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 
 const createUserSchema = z.object({
@@ -64,9 +65,8 @@ export async function createUser(prevState: ActionState | null, formData: FormDa
       };
     }
 
-
-    // Temporary:
-    const origin = 'http://localhost:3000';
+    const headersList = await headers();
+    const origin = headersList.get('origin') || 'http://localhost:3000';
     const redirectToUrl = `${origin}/auth/callback?next=/reset-password`;
 
     // Invite the user in Supabase Auth
