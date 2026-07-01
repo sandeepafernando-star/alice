@@ -19,7 +19,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 if [[ -z "${DIRECT_URL:-}" ]]; then
-  echo "error. DIRECT_URL is required in packages/db/.env (used by prisma.config.ts)."
+  echo "error. DIRECT_URL is required in packages/db/.env (used by prisma.config.ts)." >&2
   exit 1
 fi
 
@@ -31,7 +31,7 @@ if [[ -d "$migration_dir" ]]; then
     echo "info. removing incomplete migration directory: ${migration_dir}"
     rmdir "${migration_dir}"
   else
-    echo "error. migration directory already exists: ${migration_dir}"
+    echo "error. migration directory already exists: ${migration_dir}" >&2
     exit 1
   fi
 fi

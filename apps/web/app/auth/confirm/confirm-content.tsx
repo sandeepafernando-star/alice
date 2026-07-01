@@ -72,15 +72,7 @@ export default function ConfirmContent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!tokenHash ? (
-            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>
-                Invalid or expired verification link. Please request a new
-                invite.
-              </span>
-            </div>
-          ) : (
+          {tokenHash ? (
             <>
               {error && (
                 <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
@@ -111,6 +103,14 @@ export default function ConfirmContent() {
                 </button>
               )}
             </>
+          ) : (
+            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Invalid or expired verification link. Please request a new
+                invite.
+              </span>
+            </div>
           )}
         </CardContent>
       </Card>
