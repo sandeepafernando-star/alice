@@ -58,7 +58,7 @@ export default function ConfirmContent() {
   };
 
   return (
-    <main className="from-background via-muted/50 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-6">
+    <main className="from-background via-muted/50 to-background flex min-h-screen items-center justify-center bg-linear-to-br p-6">
       <Card className="border-border bg-card/60 w-full max-w-md shadow-2xl backdrop-blur-md transition-all duration-300">
         <CardHeader className="space-y-1.5 pb-4 text-center">
           <div className="bg-primary/10 text-primary border-primary/20 mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm">
@@ -72,15 +72,7 @@ export default function ConfirmContent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!tokenHash ? (
-            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>
-                Invalid or expired verification link. Please request a new
-                invite.
-              </span>
-            </div>
-          ) : (
+          {tokenHash ? (
             <>
               {error && (
                 <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
@@ -111,6 +103,14 @@ export default function ConfirmContent() {
                 </button>
               )}
             </>
+          ) : (
+            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3.5 text-sm">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Invalid or expired verification link. Please request a new
+                invite.
+              </span>
+            </div>
           )}
         </CardContent>
       </Card>
