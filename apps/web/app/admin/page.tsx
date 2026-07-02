@@ -37,19 +37,16 @@ export default async function AdminPage() {
   // Join the owner details using the foreign key constraint relationship name.
   // Note: We cast the query as any because the generated database types do not
   // contain relationship metadata, causing postgrest-js type inference to fail.
-  const { data: projectsData, error: projectsError } = await (supabase
+  const { data: projectsData, error: projectsError } = await supabase
     .from('projects')
     .select('*, owner:users!projects_owner_id_fkey(id, name, email)')
-    .order('created_at', { ascending: false }) as unknown as Promise<{
-      data: DbProject[] | null;
-      error: { message: string } | null;
-    }>);
+    .order('created_at', { ascending: false });
 
   if (projectsError) {
     console.error('error. supabase database error fetching projects:', projectsError.message);
   }
 
-  const projectsList: DbProject[] = projectsData ?? [];
+  const projectsList = (projectsData as unknown as DbProject[]) ?? [];
   const usersList: DbUser[] = usersData ?? [];
 
   return (

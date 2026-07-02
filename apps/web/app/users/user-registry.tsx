@@ -68,10 +68,10 @@ export function UserRegistry({
       // Activate immediately
       startTransition(async () => {
         const result = await toggleUserActive(user.id, true);
-        if (!result.success) {
-          setError(result.error || 'Failed to activate user.');
-        } else {
+        if (result.success) {
           setError(null);
+        } else {
+          setError(result.error || 'Failed to activate user.');
         }
       });
     }
@@ -82,11 +82,11 @@ export function UserRegistry({
 
     startTransition(async () => {
       const result = await toggleUserActive(deactivatingUser.id, false);
-      if (!result.success) {
-        setError(result.error || 'Failed to deactivate user.');
-      } else {
+      if (result.success) {
         setDeactivatingUser(null);
         setError(null);
+      } else {
+        setError(result.error || 'Failed to deactivate user.');
       }
     });
   };
@@ -248,8 +248,9 @@ export function UserRegistry({
       {/* Confirmation Modal */}
       {deactivatingUser && (
         <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-          <div className="bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
-            role="dialog"
+          <dialog
+            open
+            className="relative block bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
             aria-modal="true"
           >
             <div className="p-6">
@@ -307,7 +308,7 @@ export function UserRegistry({
                 )}
               </button>
             </div>
-          </div>
+          </dialog>
         </div>
       )}
 

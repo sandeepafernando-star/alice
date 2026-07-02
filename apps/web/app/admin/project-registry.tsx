@@ -98,11 +98,11 @@ export function ProjectRegistry({
         result = await hardDeleteProject(projectToDelete.id);
       }
 
-      if (!result.success) {
-        setError(result.error || `Failed to ${deleteMode} delete project.`);
-      } else {
+      if (result.success) {
         setProjectToDelete(null);
         setError(null);
+      } else {
+        setError(result.error || `Failed to ${deleteMode} delete project.`);
       }
     });
   };
@@ -252,9 +252,7 @@ export function ProjectRegistry({
                           <Shield className="h-3 w-3" />
                           <span>
                             Owner:{' '}
-                            <strong className="text-foreground">
-                              {ownerName}
-                            </strong>
+                            <strong className="text-foreground">{ownerName}</strong>
                             {ownerEmail && ` (${ownerEmail})`}
                             {isOwnerSelf && (
                               <span className="bg-primary/25 border-primary/30 text-primary ml-1.5 rounded-full border px-1.5 py-0.2 text-[9px] font-semibold tracking-normal uppercase">
@@ -379,9 +377,11 @@ export function ProjectRegistry({
       {/* Delete Confirmation Modal */}
       {projectToDelete && (
         <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-          <div className="bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
-            role="dialog" 
-            aria-modal="true">
+          <dialog
+            open
+            className="relative block bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
+            aria-modal="true"
+          >
             <div className="p-6">
               <div className="mb-3 flex items-center gap-3 text-rose-500">
                 <div className="rounded-full border border-rose-500/20 bg-rose-500/10 p-2">
@@ -394,10 +394,7 @@ export function ProjectRegistry({
 
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Are you sure you want to {deleteMode === 'soft' ? 'archive' : 'permanently delete'}{' '}
-                <strong className="text-foreground">
-                  {projectToDelete.name} ({projectToDelete.key}) 
-                </strong>
-                ?
+                <strong className="text-foreground">{projectToDelete.name} ({projectToDelete.key})</strong>?
               </p>
               <p className="text-muted-foreground/80 bg-muted/50 border-border/40 mt-2 rounded-lg border p-2.5 text-xs">
                 {deleteMode === 'soft'
@@ -424,7 +421,7 @@ export function ProjectRegistry({
                 {deleteButtonText}
               </button>
             </div>
-          </div>
+          </dialog>
         </div>
       )}
     </div>
