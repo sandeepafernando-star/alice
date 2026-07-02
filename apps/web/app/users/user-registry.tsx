@@ -93,7 +93,7 @@ export function UserRegistry({
 
   return (
     <>
-      <Card className="border-border bg-card/50 relative shadow-lg backdrop-blur-md">
+      <Card className="border-border bg-card/50 relative backdrop-blur-md">
         {error && (
           <div className="text-destructive bg-destructive/10 border-destructive/20 absolute top-4 right-4 left-4 z-10 flex items-center gap-2 rounded-lg border p-3 text-sm">
             <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -248,8 +248,7 @@ export function UserRegistry({
       {/* Confirmation Modal */}
       {deactivatingUser && (
         <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-          <div
-            className="bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
+          <div className="bg-card border-border animate-in fade-in zoom-in-95 w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
             role="dialog"
             aria-modal="true"
           >
