@@ -120,7 +120,7 @@ export function UserRegistry({
           </div>
           <button
             onClick={() => setIsAddUserOpen(true)}
-            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md px-4 text-xs shadow-md transition-all duration-300 hover:shadow-lg"
+            className="bg-primary text-primary-foreground hover:bg-primary/95 shadow-md hover:shadow-lg inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold transition-all duration-300"
           >
             <UserPlus className="mr-1.5 h-3.5 w-3.5" />
             Add User
