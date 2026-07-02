@@ -8,14 +8,18 @@
     "check:env": "tsx src/env.ts",
     "checktypes": "pnpm run check:env && tsc --noEmit",
     "generate": "bash ./script_generate_types.sh",
+    "generate:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./script_generate_types.ps1",
     "validate": "prisma validate",
     "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset --force",
     "migrate:status": "prisma migrate status",
+    "create:migrate:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./script_create_migrate.ps1",
     "seed": "tsx src/seed.ts",
     "create:migrate": "bash ./script_create_migrate.sh"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.108.2",
     "@types/node": "^20.19.43",
