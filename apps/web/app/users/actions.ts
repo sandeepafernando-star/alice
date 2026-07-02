@@ -42,7 +42,7 @@ export async function createUser(
   // Verify the currently logged-in user is an admin
   const currentUser = await getDbUser();
 
-  console.log("current user is ", currentUser);
+  console.log('current user is ', currentUser);
 
   if (!currentUser) {
     return {
@@ -130,8 +130,7 @@ export async function createUser(
       error: null,
     };
   } catch (err) {
-
-    console.log("unknown YES error is %s", err);
+    console.log('unknown YES error is %s', err);
 
     const message =
       err instanceof Error ? err.message : 'An unexpected error occurred.';
@@ -147,7 +146,7 @@ export async function toggleUserActive(
   active: boolean
 ): Promise<ActionState> {
   const currentUser = await getDbUser();
-  console.log("current user is ", currentUser);
+  console.log('current user is ', currentUser);
 
   if (!currentUser) {
     return {

@@ -34,9 +34,7 @@ export async function login(formData: FormData) {
     const { error: profileError } = await ensurePublicUser(user);
     if (profileError) {
       const errorContent = `Could not create user profile: ${profileError}`;
-      redirect(
-        `/login?error=${encodeURIComponent(errorContent)}`
-      );
+      redirect(`/login?error=${encodeURIComponent(errorContent)}`);
     }
   }
 
@@ -70,9 +68,7 @@ export async function signUp(formData: FormData) {
     const { error: profileError } = await ensurePublicUser(data.user);
     if (profileError) {
       const errorContent = `Could not create user profile: ${profileError}`;
-      redirect(
-        `/signup?error=${encodeURIComponent(errorContent)}`
-      );
+      redirect(`/signup?error=${encodeURIComponent(errorContent)}`);
     }
   }
 
