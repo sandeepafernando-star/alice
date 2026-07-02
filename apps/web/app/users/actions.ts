@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { auditCreate, userActiveAuditUpdate } from '@/lib/audit';
-import { getDbUser } from '../../lib/auth';
+import { getDbUser } from '@/lib/auth';
 import {
   buildAuthCallbackUrl,
   resolveRequestOrigin,
@@ -41,10 +41,13 @@ export async function createUser(
 
   // Verify the currently logged-in user is an admin
   const currentUser = await getDbUser();
+
+  console.log("current user is ", currentUser);
+
   if (!currentUser) {
     return {
       success: false,
-      error: 'Not authenticated.',
+      error: 'Not authenticated.' + currentUser,
     };
   }
 
@@ -127,6 +130,9 @@ export async function createUser(
       error: null,
     };
   } catch (err) {
+
+    console.log("unknown YES error is %s", err);
+
     const message =
       err instanceof Error ? err.message : 'An unexpected error occurred.';
     return {
@@ -141,6 +147,8 @@ export async function toggleUserActive(
   active: boolean
 ): Promise<ActionState> {
   const currentUser = await getDbUser();
+  console.log("current user is ", currentUser);
+
   if (!currentUser) {
     return {
       success: false,

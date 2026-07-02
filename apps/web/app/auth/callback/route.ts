@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { resolveSafeRedirectPath } from '@/lib/auth-redirect';
+import { ensurePublicUser } from '@/lib/ensure-public-user';
 import { createClient } from '@/lib/supabase/server';
 
 function buildRedirectUrl(request: Request, path: string): string {
@@ -28,6 +29,19 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { error: profileError } = await ensurePublicUser(user);
+        if (profileError) {
+          const errorContent = `Could not create user profile: ${profileError}`;
+          const errorPath = `/login?error=${encodeURIComponent(errorContent)}`;
+          return NextResponse.redirect(buildRedirectUrl(request, errorPath));
+        }
+      }
+
       return NextResponse.redirect(buildRedirectUrl(request, next));
     }
   }
