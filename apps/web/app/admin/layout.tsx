@@ -1,4 +1,1 @@
-import AdminLayout, { metadata } from '@/components/admin/layout';
-
-export { metadata };
-export default AdminLayout;
+export { default, metadata } from '@/components/admin/layout';
