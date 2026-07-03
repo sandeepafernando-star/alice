@@ -22,6 +22,10 @@ export type ProjectRowWithOwner = ProjectRow & {
   } | null;
 };
 
+function unsafeCast<T>(val: unknown): T {
+  return val as T;
+}
+
 export class ProjectsRepository {
   async listAll(): Promise<ProjectRowWithOwner[]> {
     const { data, error } = await supabase
@@ -34,7 +38,7 @@ export class ProjectsRepository {
       throw new Error('Failed to list projects');
     }
 
-    return (data as unknown) as ProjectRowWithOwner[];
+    return unsafeCast<ProjectRowWithOwner[]>(data);
   }
 }
 
