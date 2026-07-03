@@ -57,6 +57,7 @@ export function ProjectRegistry({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+
   const isManagerOrAdmin =
     currentUserRole === 'admin' || currentUserRole === 'manager';
   const isAdmin = currentUserRole === 'admin';
@@ -69,6 +70,7 @@ export function ProjectRegistry({
       proj.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const isSoftDeleted = !!proj.deleted_at;
+
 
     if (filterTab === 'active') {
       return matchesSearch && !isSoftDeleted;
