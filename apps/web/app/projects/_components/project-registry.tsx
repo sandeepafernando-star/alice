@@ -157,7 +157,7 @@ export function ProjectRegistry({
             placeholder="Search projects by name, key, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+            className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
           />
         </div>
 
@@ -334,7 +334,7 @@ export function ProjectRegistry({
                               <button
                                 disabled={isPending}
                                 onClick={() => handleHardDelete(proj)}
-                                className="focus-visible:ring-ring flex h-8 cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 px-3 text-xs font-semibold text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                className="focus-visible:ring-ring flex h-9 cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 px-3 text-xs font-semibold text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                               >
                                 <Trash2 className="mr-1 h-3 w-3" />
                                 Purge
@@ -400,7 +400,7 @@ export function ProjectRegistry({
 
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Are you sure you want to
-                {deleteMode === 'soft' ? ' archive' : ' permanently delete'}
+                {deleteMode === 'soft' ? ' archive ' : ' permanently delete '}
                 <strong className="text-foreground">
                   {projectToDelete.name} ({projectToDelete.key})
                 </strong>
