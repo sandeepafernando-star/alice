@@ -182,7 +182,7 @@ export function ProjectRegistry({
                   : 'hover:text-foreground'
               }`}
             >
-              Archived & Deleted
+              Archived
             </button>
           </div>
 
@@ -404,7 +404,7 @@ export function ProjectRegistry({
                 <strong className="text-foreground">
                   {projectToDelete.name} ({projectToDelete.key})
                 </strong>
-                {'?'}
+                {' ?'}
               </p>
               <p className="text-muted-foreground/80 bg-muted/50 border-border/40 mt-2 rounded-lg border p-2.5 text-xs">
                 {deleteMode === 'soft'
