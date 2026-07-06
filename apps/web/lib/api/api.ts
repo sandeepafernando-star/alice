@@ -30,7 +30,7 @@ export async function getResponse<T>(
       Authorization: `Bearer ${token}`,
       ...init?.headers,
     },
-  } as RequestInit);
+  });
 
   const data: T | ApiErrorResponse = await response.json();
 

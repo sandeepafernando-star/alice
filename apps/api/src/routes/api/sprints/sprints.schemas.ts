@@ -25,6 +25,10 @@ export const updateSprintStatusSchema = z.object({
 
 export type UpdateSprintStatusBody = z.infer<typeof updateSprintStatusSchema>;
 
+export const updateSprintBodySchema = createSprintBodySchema;
+
+export type UpdateSprintBody = z.infer<typeof updateSprintBodySchema>;
+
 export type SprintResponse = {
   id: string;
   name: string;

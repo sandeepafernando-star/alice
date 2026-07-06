@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { SprintList } from '@/app/sprints/_components/sprint-list';
-import { CreateSprintForm } from '@/app/sprints/_components/create-sprint-form';
+import { SprintForm } from '@/app/sprints/_components/sprint-form';
 import { listSprints, Sprint } from '@/app/sprints/_services/sprints.service';
 
 interface SprintsWorkspaceProps {
@@ -16,6 +16,7 @@ export function SprintsWorkspace({
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isAddSprintOpen, setIsAddSprintOpen] = useState(false);
+  const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
 
   const refreshSprints = useCallback(async () => {
     setLoadError(null);
@@ -57,16 +58,30 @@ export function SprintsWorkspace({
           onRetry={refreshSprints}
           onSprintUpdated={handleSprintUpdated}
           onAddSprint={() => setIsAddSprintOpen(true)}
+          onEditSprint={(sprint) => setEditingSprint(sprint)}
         />
       </div>
 
       {isAddSprintOpen && (
         <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
           <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
-            <CreateSprintForm
-              onSprintCreated={handleSprintCreated}
+            <SprintForm
+              onSprintUpdated={handleSprintCreated}
               onClose={() => setIsAddSprintOpen(false)}
               onSuccess={() => setIsAddSprintOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {editingSprint && (
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+          <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
+            <SprintForm
+              sprintId={editingSprint.id}
+              onSprintUpdated={handleSprintUpdated}
+              onClose={() => setEditingSprint(null)}
+              onSuccess={() => setEditingSprint(null)}
             />
           </div>
         </div>
