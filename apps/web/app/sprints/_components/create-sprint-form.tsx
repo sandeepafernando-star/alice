@@ -12,7 +12,6 @@ import {
 import { Input } from '@repo/ui/components/ui/input';
 import { Label } from '@repo/ui/components/ui/label';
 import { cn } from '@repo/ui/lib/utils';
-import { apiFetch } from '@/lib/api-client';
 import type { Tables } from '@repo/types';
 import {
   Loader2,
@@ -22,6 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { createSprint, Sprint } from '../_services/sprints.service';
+import { apiFetch } from '@/lib/api/api-client';
 
 type CreateSprintFormProps = {
   className?: string;
