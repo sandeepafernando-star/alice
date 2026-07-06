@@ -42,7 +42,7 @@ export async function apiFetch<T>(
       Authorization: `Bearer ${token}`,
       ...init?.headers,
     },
-  } as RequestInit);
+  });
 
   const data: T | ApiErrorResponse = await response.json();
 
