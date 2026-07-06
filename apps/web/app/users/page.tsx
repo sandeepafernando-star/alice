@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getDbUser, getUser } from '../../lib/auth';
-import { createClient } from '@/lib/supabase/server';
 import type { Tables } from '@repo/types';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import { UserRegistry } from '@/app/users/_components/user-registry';
+import { getUsersList } from '@/app/users/_services/users.service';
 
 type DbUser = Tables<'users'>;
 
@@ -17,17 +17,13 @@ export default async function UsersDashboard() {
   const dbUser = await getDbUser();
   const currentUserRole = dbUser?.role ?? 'member';
 
-  const supabase = await createClient();
-  const { data: dbUsers, error } = await supabase
-    .from('users')
-    .select()
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('error. supabase database error:', error.message);
+  let usersList: DbUser[] = [];
+  try {
+    usersList = await getUsersList();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('error. failed to fetch users list via API:', message);
   }
-
-  const usersList: DbUser[] = dbUsers ?? [];
 
   return (
     <DashboardShell
