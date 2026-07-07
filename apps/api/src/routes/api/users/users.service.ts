@@ -127,10 +127,7 @@ export class UsersService {
     );
 
     if (authError) {
-      console.error(
-        `Failed to update user metadata in Supabase Auth for ${targetUserId}:`,
-        authError.message
-      );
+      console.error('Failed to update user metadata in Supabase Auth');
     }
 
     return updated;
@@ -165,10 +162,7 @@ export class UsersService {
     );
 
     if (authError) {
-      console.error(
-        `Failed to update ban status in Supabase Auth for ${targetUserId}:`,
-        authError.message
-      );
+      console.error('Failed to update ban status in Supabase Auth');
     }
 
     return updated;

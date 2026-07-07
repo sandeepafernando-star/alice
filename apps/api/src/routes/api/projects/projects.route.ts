@@ -6,6 +6,7 @@ import {
 } from '../../../middlewares/auth';
 import { projectsService } from './projects.service';
 import { createProjectSchema, updateProjectSchema } from './projects.schemas';
+import { parsePagination } from '../../../lib/pagination';
 
 const projectsRouter: Router = Router();
 
@@ -14,26 +15,21 @@ projectsRouter.get(
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const pageQuery = req.query.page;
-      const limitQuery = req.query.limit;
       const statusQuery = req.query.status as 'active' | 'archived' | undefined;
       const searchQuery = req.query.search as string | undefined;
 
-      if (pageQuery !== undefined && limitQuery !== undefined) {
-        const page = Number.parseInt(pageQuery as string, 10);
-        const limit = Number.parseInt(limitQuery as string, 10);
-
-        if (!Number.isNaN(page) && page > 0 && !Number.isNaN(limit) && limit > 0) {
-          const result = await projectsService.listProjects(page, limit, statusQuery, searchQuery);
-          const totalPages = Math.ceil(result.totalCount / limit);
-          return res.json({
-            projects: result.projects,
-            totalCount: result.totalCount,
-            page,
-            limit,
-            totalPages,
-          });
-        }
+      const pagination = parsePagination(req);
+      if (pagination) {
+        const { page, limit } = pagination;
+        const result = await projectsService.listProjects(page, limit, statusQuery, searchQuery);
+        const totalPages = Math.ceil(result.totalCount / limit);
+        return res.json({
+          projects: result.projects,
+          totalCount: result.totalCount,
+          page,
+          limit,
+          totalPages,
+        });
       }
 
       const projects = await projectsService.listProjects();
