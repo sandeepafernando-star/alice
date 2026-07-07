@@ -1,5 +1,5 @@
 {
-  "$schema": "https://v2-10-0.turborepo.dev/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
   "ui": "tui",
   "globalEnv": ["PORT", "GITHUB_ACTIONS", "NODE_ENV"],
   "tasks": {
@@ -16,7 +16,8 @@
         "NEXT_PUBLIC_SITE_URL",
         "SUPABASE_SERVICE_ROLE_KEY",
         "STORAGE_BUCKET_NAME",
-        "SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET"
+        "SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET",
+        "INTERNAL_API_URL"
       ]
     },
     "dev": {

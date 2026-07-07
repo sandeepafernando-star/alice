@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Card,
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import type { Tables } from '@repo/types';
 import { toggleUserActive } from './actions';
+import { CustomSpinner } from '@/app/users/_components/user-spinner';
 
 type DbUser = Tables<'users'>;
 
@@ -71,11 +72,16 @@ export function UserRegistry({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [mounted, setMounted] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<DbUser | null>(null);
   const [deactivatingUser, setDeactivatingUser] = useState<DbUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navigateToParams = (newPage: number, newLimit: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -238,17 +244,23 @@ export function UserRegistry({
                       </div>
 
                       <div className="text-muted-foreground flex items-center gap-1 text-xs justify-start">
-                        <Calendar className="h-3 w-3" />
-                        <span>
-                          {new Date(usr.created_at).toLocaleDateString(
-                            undefined,
-                            {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            }
-                          )}
-                        </span>
+                        {mounted ? (
+                          <div className="flex gap-1 items-center">
+                            <Calendar className="h-3 w-3 shrink-0" />
+                            <span>
+                              {new Date(usr.created_at).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                }
+                              )}
+                            </span>
+                          </div>
+                        ) : (
+                          <CustomSpinner />
+                        )}
                       </div>
 
                       <div className="flex justify-start">
