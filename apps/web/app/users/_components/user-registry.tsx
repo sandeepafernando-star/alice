@@ -201,7 +201,7 @@ export function UserRegistry({
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[110px_90px_120px_70px_120px] sm:gap-3 sm:items-center sm:shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[110px_90px_120px_90px_120px] sm:gap-3 sm:items-center sm:shrink-0">
                       <div className="flex justify-start">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${getRoleBadgeStyles(usr.role)}`}
@@ -248,7 +248,7 @@ export function UserRegistry({
                           <button
                             disabled={isPending}
                             onClick={() => setEditingUser(usr)}
-                            className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-xs font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
+                            className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
                           >
                             Edit
                           </button>
@@ -260,7 +260,7 @@ export function UserRegistry({
                           <button
                             disabled={isPending}
                             onClick={() => handleToggleActive(usr)}
-                            className={`focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-xs font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
+                            className={`focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
                               usr.active
                                 ? 'border border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
                                 : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'

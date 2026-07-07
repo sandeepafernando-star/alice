@@ -84,6 +84,11 @@ export function ProjectRegistry({
 
   // Synchronize search input changes with URL queries via debounce
   useEffect(() => {
+    const currentSearch = searchParams.get('search') ?? '';
+    if (searchQuery === currentSearch) {
+      return;
+    }
+
     const delayDebounceFn = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       if (searchQuery) {
@@ -299,7 +304,7 @@ export function ProjectRegistry({
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[180px_70px_80px] sm:gap-4 sm:items-center sm:shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[180px_90px_90px] sm:gap-4 sm:items-center sm:shrink-0">
                         <div className="flex justify-start">
                           <span className="text-muted-foreground flex items-center gap-1 text-xs justify-start">
                             <Calendar className="h-3 w-3 shrink-0" />
@@ -332,7 +337,7 @@ export function ProjectRegistry({
                             isManagerOrAdmin && (
                               <button
                                 onClick={() => setProjectToEdit(proj)}
-                                className="border-input hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-xs font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+                                className="border-input hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
                               >
                                 Edit
                               </button>
@@ -342,7 +347,7 @@ export function ProjectRegistry({
                               <button
                                 disabled={isPending}
                                 onClick={() => handleRestore(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 text-[11px] shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                               >
                                 <RefreshCw className="mr-1 h-3 w-3 shrink-0" />
                                 Restore
@@ -357,7 +362,7 @@ export function ProjectRegistry({
                               <button
                                 disabled={isPending}
                                 onClick={() => handleSoftDelete(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 text-[11px] shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                               >
                                 Delete
                               </button>
@@ -367,7 +372,7 @@ export function ProjectRegistry({
                               <button
                                 disabled={isPending}
                                 onClick={() => handleHardDelete(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 text-[11px] shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                               >
                                 <Trash2 className="mr-1 h-3 w-3 shrink-0" />
                                 Purge
