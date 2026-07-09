@@ -1,24 +1,68 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/auth';
+import { getUser, getDbUser } from '@/lib/auth';
+import { TeamRegistry } from './_components/team-registry';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
+import { getTeamListPaginated, type TeamListRow } from './_services/teams.service';
+import { getUserList } from '@/app/users/_services/users.service';
 
-export default async function ManagerDashboard() {
+export default async function ManagerDashboardPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ page?: string; limit?: string; tab?: string; search?: string }>;
+}>) {
+  const resolvedSearchParams = await searchParams;
+  const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);
+  const limit = Number.parseInt(resolvedSearchParams.limit ?? '10', 10);
+  
+  // Map tab selections to DB statuses. Default to 'active'.
+  let status: 'active' | 'inactive' | 'archived' | undefined = 'active';
+  if (resolvedSearchParams.tab === 'archived') {
+    status = 'archived';
+  } else if (resolvedSearchParams.tab === 'inactive') {
+    status = 'inactive';
+  }
+  
+  const search = resolvedSearchParams.search ?? '';
+
   const user = await getUser();
 
   if (!user) {
     redirect('/login');
   }
 
-  /** Custom RBAC: load role from application database once implemented. */
+  const dbUser = await getDbUser();
+  const userRole = dbUser?.role ?? 'member';
+
+  // Fetch all active users to populate the Team Manager choices
+  const usersList = (await getUserList()) ?? [];
+
+  let teamsData = { teams: [] as TeamListRow[], totalCount: 0, page: 1, limit: 10, totalPages: 1 };
+  try {
+    teamsData = await getTeamListPaginated(page, limit, status, search);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('error. failed to fetch teams list via API:', message);
+  }
 
   return (
     <DashboardShell
       title="Team"
-      description="Manage your team's workload and sprints."
+      description="Manage teams workload and engineering resources."
       user={user}
     >
-      <div className="text-muted-foreground flex h-40 items-center justify-center rounded-lg border border-dashed text-sm">
-        Manager workspace — content coming soon.
+      <div className="w-full">
+        <TeamRegistry
+          teams={teamsData.teams}
+          totalCount={teamsData.totalCount}
+          page={teamsData.page}
+          limit={teamsData.limit}
+          totalPages={teamsData.totalPages}
+          tab={status ?? 'active'}
+          search={search}
+          users={usersList}
+          currentUserId={dbUser?.id}
+          currentUserRole={userRole}
+        />
       </div>
     </DashboardShell>
   );
