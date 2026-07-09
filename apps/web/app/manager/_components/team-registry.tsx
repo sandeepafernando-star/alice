@@ -25,23 +25,19 @@ import {
   Search,
   FolderOpen,
 } from 'lucide-react';
-import type { Tables } from '@repo/types';
 import { Pagination } from '@/components/pagination';
-
-type DbUser = Tables<'users'>;
-type DbTeam = Tables<'teams'> & {
-  manager?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
-};
+import type { Team } from '../_services/teams.service';
+import type { User } from '@/app/users/_services/users.service';
 
 interface TeamRegistryProps {
-  readonly teams: DbTeam[];
+  readonly teams: Team[];
   readonly totalCount: number;
   readonly page: number;
   readonly limit: number;
   readonly totalPages: number;
   readonly tab: 'active' | 'inactive' | 'archived';
   readonly search: string;
-  readonly users: DbUser[];
+  readonly users: User[];
   readonly currentUserId?: string | null;
   readonly currentUserRole?: string | null;
 }
@@ -68,8 +64,8 @@ export function TeamRegistry({
 
   const [searchQuery, setSearchQuery] = useState(search);
   const [isAddTeamOpen, setIsAddTeamOpen] = useState(false);
-  const [teamToEdit, setTeamToEdit] = useState<DbTeam | null>(null);
-  const [teamToDelete, setTeamToDelete] = useState<DbTeam | null>(null);
+  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
+  const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [deleteMode, setDeleteMode] = useState<'soft' | 'hard'>('soft');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -106,13 +102,13 @@ export function TeamRegistry({
     router.push(`${pathname}?${nextQueryParams.toString()}`);
   };
 
-  const handleSoftDelete = (item: DbTeam) => {
+  const handleSoftDelete = (item: Team) => {
     setTeamToDelete(item);
     setDeleteMode('soft');
     setError(null);
   };
 
-  const handleHardDelete = (item: DbTeam) => {
+  const handleHardDelete = (item: Team) => {
     setTeamToDelete(item);
     setDeleteMode('hard');
     setError(null);
@@ -136,7 +132,7 @@ export function TeamRegistry({
     });
   };
 
-  const handleRestore = (item: DbTeam) => {
+  const handleRestore = (item: Team) => {
     setError(null);
     startTransition(async () => {
       const actionResult = await restoreTeam(item.id);

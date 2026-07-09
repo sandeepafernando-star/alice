@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getUser, getDbUser } from '@/lib/auth';
 import { TeamRegistry } from './_components/team-registry';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
-import { getTeamListPaginated, type TeamListRow } from './_services/teams.service';
+import { getTeamListPaginated, type Team } from './_services/teams.service';
 import { getUserList } from '@/app/users/_services/users.service';
 
 export default async function ManagerDashboardPage({
@@ -36,9 +36,9 @@ export default async function ManagerDashboardPage({
   // Fetch all active users to populate the Team Manager choices
   const usersList = (await getUserList()) ?? [];
 
-  let teamsData = { teams: [] as TeamListRow[], totalCount: 0, page: 1, limit: 10, totalPages: 1 };
+  let teamsResult = { teams: [] as Team[], totalCount: 0, page: 1, limit: 10, totalPages: 1 };
   try {
-    teamsData = await getTeamListPaginated(page, limit, status, search);
+    teamsResult = await getTeamListPaginated(page, limit, status, search);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('error. failed to fetch teams list via API:', message);
@@ -52,11 +52,11 @@ export default async function ManagerDashboardPage({
     >
       <div className="w-full">
         <TeamRegistry
-          teams={teamsData.teams}
-          totalCount={teamsData.totalCount}
-          page={teamsData.page}
-          limit={teamsData.limit}
-          totalPages={teamsData.totalPages}
+          teams={teamsResult.teams}
+          totalCount={teamsResult.totalCount}
+          page={teamsResult.page}
+          limit={teamsResult.limit}
+          totalPages={teamsResult.totalPages}
           tab={status ?? 'active'}
           search={search}
           users={usersList}

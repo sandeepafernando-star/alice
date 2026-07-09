@@ -1,23 +1,22 @@
 import { apiFetch } from '@/lib/api/api-client.server';
 import { Tables } from '@repo/types';
+import type { User } from '@/app/users/_services/users.service';
 
-type DbUser = Tables<'users'>;
-
-export type ProjectListRow = Tables<'projects'> & {
-  owner?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
+export type Project = Tables<'projects'> & {
+  owner?: Pick<User, 'id' | 'name' | 'email'> | null;
 };
 
 const apiProjects = '/api/projects';
 
-export async function getProjectList(): Promise<ProjectListRow[]> {
-  const data = await apiFetch<{ projects: ProjectListRow[] }>(apiProjects, {
+export async function getProjectList(): Promise<Project[]> {
+  const data = await apiFetch<{ projects: Project[] }>(apiProjects, {
     next: { revalidate: 0 },
   });
   return data.projects;
 }
 
 export type GetProjectsPaginatedResponse = {
-  projects: ProjectListRow[];
+  projects: Project[];
   totalCount: number;
   page: number;
   limit: number;
@@ -91,6 +90,41 @@ export async function restoreProject(id: string): Promise<Tables<'projects'>> {
 
 export async function hardDeleteProject(id: string): Promise<void> {
   await apiFetch<void>(`${apiProjects}/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export type ProjectMemberWithUser = {
+  project_id: string;
+  user_id: string;
+  status: 'active' | 'inactive' | 'archived' | 'deleted';
+  created_at: string;
+  user: Pick<User, 'id' | 'name' | 'email' | 'role'> | null;
+};
+
+export async function getProjectDetails(id: string): Promise<Project> {
+  const data = await apiFetch<{ project: Project }>(`${apiProjects}/${id}`, {
+    next: { revalidate: 0 },
+  });
+  return data.project;
+}
+
+export async function getProjectMembers(projectId: string): Promise<ProjectMemberWithUser[]> {
+  const data = await apiFetch<{ members: ProjectMemberWithUser[] }>(`${apiProjects}/${projectId}/members`, {
+    next: { revalidate: 0 },
+  });
+  return data.members;
+}
+
+export async function addProjectMember(projectId: string, userId: string): Promise<void> {
+  await apiFetch<void>(`${apiProjects}/${projectId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+}
+
+export async function removeProjectMember(projectId: string, userId: string): Promise<void> {
+  await apiFetch<void>(`${apiProjects}/${projectId}/members/${userId}`, {
     method: 'DELETE',
   });
 }

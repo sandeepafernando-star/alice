@@ -1,20 +1,20 @@
 import { apiFetch } from '@/lib/api/api-client.server';
 import { Tables } from '@repo/types';
 
-export type UserRow = Tables<'users'>;
+export type User = Tables<'users'>;
 
 const apiUsers = '/api/users';
 
 export type GetUsersPaginatedResponse = {
-  users: UserRow[];
+  users: User[];
   totalCount: number;
   page: number;
   limit: number;
   totalPages: number;
 };
 
-export async function getUsersList(): Promise<UserRow[]> {
-  const data = await apiFetch<{ users: UserRow[] }>(apiUsers, {
+export async function getUsersList(): Promise<User[]> {
+  const data = await apiFetch<{ users: User[] }>(apiUsers, {
     next: { revalidate: 0 },
   });
   return data.users;
@@ -31,7 +31,7 @@ export async function getUsersListPaginated(
   return data;
 }
 
-export async function getUserList(): Promise<UserRow[]> {
+export async function getUserList(): Promise<User[]> {
   const users = await getUsersList();
   return users
     .filter((u) => u.active)
@@ -45,8 +45,8 @@ export type CreateUserInput = {
   redirectTo: string;
 };
 
-export async function createUser(input: CreateUserInput): Promise<UserRow> {
-  const data = await apiFetch<{ user: UserRow }>(apiUsers, {
+export async function createUser(input: CreateUserInput): Promise<User> {
+  const data = await apiFetch<{ user: User }>(apiUsers, {
     method: 'POST',
     body: JSON.stringify(input),
   });
@@ -58,16 +58,16 @@ export type UpdateUserInput = {
   role: 'admin' | 'manager' | 'member';
 };
 
-export async function updateUser(id: string, input: UpdateUserInput): Promise<UserRow> {
-  const data = await apiFetch<{ user: UserRow }>(`${apiUsers}/${id}`, {
+export async function updateUser(id: string, input: UpdateUserInput): Promise<User> {
+  const data = await apiFetch<{ user: User }>(`${apiUsers}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(input),
   });
   return data.user;
 }
 
-export async function toggleUserActive(id: string, active: boolean): Promise<UserRow> {
-  const data = await apiFetch<{ user: UserRow }>(`${apiUsers}/${id}/toggle-active`, {
+export async function toggleUserActive(id: string, active: boolean): Promise<User> {
+  const data = await apiFetch<{ user: User }>(`${apiUsers}/${id}/toggle-active`, {
     method: 'PATCH',
     body: JSON.stringify({ active }),
   });

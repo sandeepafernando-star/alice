@@ -22,8 +22,8 @@ import {
   X,
 } from 'lucide-react';
 import type { Tables } from '@repo/types';
+import type { User } from '@/app/users/_services/users.service';
 
-type DbUser = Tables<'users'>;
 type DbProject = Tables<'projects'>;
 
 const initialState: ActionState = {
@@ -35,7 +35,7 @@ interface ProjectFormProps {
   readonly onClose?: () => void;
   readonly onSuccess?: () => void;
   readonly projectToEdit?: DbProject | null;
-  readonly users: DbUser[];
+  readonly users: User[];
 }
 
 function formatDateForInput(dateString?: string | null) {

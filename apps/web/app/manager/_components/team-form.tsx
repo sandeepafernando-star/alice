@@ -21,8 +21,8 @@ import {
   X,
 } from 'lucide-react';
 import type { Tables } from '@repo/types';
+import type { User } from '@/app/users/_services/users.service';
 
-type DbUser = Tables<'users'>;
 type DbTeam = Tables<'teams'>;
 
 const initialActionState: ActionState = {
@@ -34,7 +34,7 @@ interface TeamFormProps {
   readonly onClose?: () => void;
   readonly onSuccess?: () => void;
   readonly teamToEdit?: DbTeam | null;
-  readonly users: DbUser[];
+  readonly users: User[];
 }
 
 export function TeamForm({

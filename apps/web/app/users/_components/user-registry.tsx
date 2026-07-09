@@ -21,15 +21,13 @@ import {
   AlertTriangle,
   UserPlus,
 } from 'lucide-react';
-import type { Tables } from '@repo/types';
 import { toggleUserActive } from './actions';
 import { CustomSpinner } from '@/app/users/_components/user-spinner';
 import { Pagination } from '@/components/pagination';
-
-type DbUser = Tables<'users'>;
+import type { User } from '../_services/users.service';
 
 interface UserRegistryProps {
-  readonly users: DbUser[];
+  readonly users: User[];
   readonly totalCount: number;
   readonly page: number;
   readonly limit: number;
@@ -71,8 +69,8 @@ export function UserRegistry({
 
   const [mounted, setMounted] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<DbUser | null>(null);
-  const [deactivatingUser, setDeactivatingUser] = useState<DbUser | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -80,7 +78,7 @@ export function UserRegistry({
     setMounted(true);
   }, []);
 
-  const handleToggleActive = (user: DbUser) => {
+  const handleToggleActive = (user: User) => {
     if (user.active) {
       // Trigger confirmation modal for deactivation
       setDeactivatingUser(user);

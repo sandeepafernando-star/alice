@@ -12,11 +12,9 @@ import {
   CardTitle,
 } from '@repo/ui/components/ui/card';
 import { UserPlus, Loader2, AlertCircle, CheckCircle, X } from 'lucide-react';
-import type { Tables } from '@repo/types';
 import { ActionState } from '@/lib/server-actions';
 import { createUser, updateUser } from './actions';
-
-type DbUser = Tables<'users'>;
+import type { User } from '../_services/users.service';
 
 const initialState: ActionState = {
   success: false,
@@ -24,7 +22,7 @@ const initialState: ActionState = {
 };
 
 interface UserFormProps {
-  readonly user?: DbUser;
+  readonly user?: User;
   readonly onClose?: () => void;
   readonly onSuccess?: () => void;
 }

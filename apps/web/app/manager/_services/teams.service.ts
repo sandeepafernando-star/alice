@@ -1,23 +1,22 @@
 import { apiFetch } from '@/lib/api/api-client.server';
 import { Tables } from '@repo/types';
+import type { User } from '@/app/users/_services/users.service';
 
-type DbUser = Tables<'users'>;
-
-export type TeamListRow = Tables<'teams'> & {
-  manager?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
+export type Team = Tables<'teams'> & {
+  manager?: Pick<User, 'id' | 'name' | 'email'> | null;
 };
 
 const apiTeams = '/api/teams';
 
-export async function getTeamList(): Promise<TeamListRow[]> {
-  const data = await apiFetch<{ teams: TeamListRow[] }>(apiTeams, {
+export async function getTeamList(): Promise<Team[]> {
+  const data = await apiFetch<{ teams: Team[] }>(apiTeams, {
     next: { revalidate: 0 },
   });
   return data.teams;
 }
 
 export type GetTeamsPaginatedResponse = {
-  teams: TeamListRow[];
+  teams: Team[];
   totalCount: number;
   page: number;
   limit: number;
@@ -27,7 +26,7 @@ export type GetTeamsPaginatedResponse = {
 export async function getTeamListPaginated(
   page: number,
   limit: number,
-  status?: 'active' | 'inactive' | 'archived' | 'deleted',
+  status?: 'active' | 'inactive' | 'archived',
   search?: string
 ): Promise<GetTeamsPaginatedResponse> {
   let url = `${apiTeams}?page=${page}&limit=${limit}`;
@@ -37,6 +36,7 @@ export async function getTeamListPaginated(
   if (search) {
     url += `&search=${encodeURIComponent(search)}`;
   }
+
   const data = await apiFetch<GetTeamsPaginatedResponse>(url, {
     next: { revalidate: 0 },
   });
