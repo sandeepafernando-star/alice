@@ -33,7 +33,7 @@ Related:
 
 ---
 
-## ER diagram
+## ER-diagram
 
 ```mermaid
 erDiagram
