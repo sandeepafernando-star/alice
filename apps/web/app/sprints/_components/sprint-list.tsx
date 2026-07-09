@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import {
   Card,
@@ -149,6 +149,12 @@ function SprintListItem({
   onSprintUpdated,
   onEditSprint,
 }: Readonly<SprintListItemProps>) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <li className="space-y-2 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -165,7 +171,13 @@ function SprintListItem({
           />
         </div>
         <p className="text-muted-foreground text-sm">
-          {formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}
+          {mounted ? (
+            <>{formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}</>
+          ) : (
+            <span className="invisible">
+              {sprint.startDate} – {sprint.endDate}
+            </span>
+          )}
         </p>
       </div>
       {sprint.project ? (
