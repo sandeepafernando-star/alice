@@ -50,7 +50,17 @@ export function SprintsWorkspace({
     router.refresh();
   };
 
-  const handleSprintUpdated = () => {
+  const handleSprintUpdated = (updated?: Sprint) => {
+    if (updated) {
+      const isMovedToAnotherTab =
+        (filterTab === 'active' && updated.status === 'Archived') ||
+        (filterTab === 'archived' && updated.status !== 'Archived');
+
+      if (isMovedToAnotherTab && sprints.length === 1 && pagination.page > 1) {
+        handlePageChange(pagination.page - 1);
+        return;
+      }
+    }
     router.refresh();
   };
 
