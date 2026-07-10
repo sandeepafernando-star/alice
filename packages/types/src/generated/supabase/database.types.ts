@@ -116,59 +116,6 @@ export type Database = {
           },
         ];
       };
-      attributes: {
-        Row: {
-          content: Json;
-          created_at: string;
-          created_by: string | null;
-          deleted_at: string | null;
-          id: string;
-          status: Database['public']['Enums']['RecordStatus'];
-          updated_at: string;
-          updated_by: string | null;
-          work_item_types: Database['public']['Enums']['WorkItemType'][] | null;
-        };
-        Insert: {
-          content: Json;
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          id?: string;
-          status?: Database['public']['Enums']['RecordStatus'];
-          updated_at: string;
-          updated_by?: string | null;
-          work_item_types?:
-            Database['public']['Enums']['WorkItemType'][] | null;
-        };
-        Update: {
-          content?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          id?: string;
-          status?: Database['public']['Enums']['RecordStatus'];
-          updated_at?: string;
-          updated_by?: string | null;
-          work_item_types?:
-            Database['public']['Enums']['WorkItemType'][] | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'attributes_created_by_fkey';
-            columns: ['created_by'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'attributes_updated_by_fkey';
-            columns: ['updated_by'];
-            isOneToOne: false;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
       comments: {
         Row: {
           author_id: string;
@@ -417,6 +364,7 @@ export type Database = {
       };
       projects: {
         Row: {
+          attributes_config: Json | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
@@ -430,8 +378,10 @@ export type Database = {
           status: Database['public']['Enums']['ProjectStatus'];
           updated_at: string;
           updated_by: string | null;
+          workflow_config: Json | null;
         };
         Insert: {
+          attributes_config?: Json | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -445,8 +395,10 @@ export type Database = {
           status?: Database['public']['Enums']['ProjectStatus'];
           updated_at: string;
           updated_by?: string | null;
+          workflow_config?: Json | null;
         };
         Update: {
+          attributes_config?: Json | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -460,6 +412,7 @@ export type Database = {
           status?: Database['public']['Enums']['ProjectStatus'];
           updated_at?: string;
           updated_by?: string | null;
+          workflow_config?: Json | null;
         };
         Relationships: [
           {

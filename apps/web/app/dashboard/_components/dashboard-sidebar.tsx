@@ -11,7 +11,7 @@ import {
   Music,
   Timer,
   Files,
-  Code,
+  ClipboardPenIcon,
 } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import {
@@ -32,7 +32,7 @@ const navItems = [
   { href: '/users', label: 'Users', icon: Users },
   { href: '/projects', label: 'Projects', icon: FolderKanban },
   { href: '/sprints', label: 'Sprints', icon: Timer },
-  { href: '/attributes', label: 'Attributes', icon: Code },
+  { href: '/work-items', label: 'WorkItems', icon: ClipboardPenIcon },
   { href: '/files', label: 'Files', icon: Files },
   { href: '/instruments', label: 'Instruments', icon: Music },
   { href: '/member', label: 'My Work', icon: CircleDot },
