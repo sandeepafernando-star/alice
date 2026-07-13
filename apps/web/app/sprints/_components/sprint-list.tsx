@@ -172,7 +172,9 @@ function SprintListItem({
         </div>
         <p className="text-muted-foreground text-sm">
           {mounted ? (
-            <>{formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}</>
+            <>
+              {formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}
+            </>
           ) : (
             <span className="invisible">
               {sprint.startDate} – {sprint.endDate}
@@ -219,7 +221,7 @@ function SprintTabs({ filterTab, setFilterTab }: Readonly<SprintTabsProps>) {
     <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
       <button
         onClick={() => setFilterTab('active')}
-        className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+        className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
           filterTab === 'active'
             ? 'bg-background text-foreground shadow-sm'
             : 'hover:text-foreground'
@@ -229,7 +231,7 @@ function SprintTabs({ filterTab, setFilterTab }: Readonly<SprintTabsProps>) {
       </button>
       <button
         onClick={() => setFilterTab('archived')}
-        className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+        className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
           filterTab === 'archived'
             ? 'bg-background text-foreground shadow-sm'
             : 'hover:text-foreground'
@@ -277,12 +279,7 @@ function SprintListContent({
       <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
         <p className="text-destructive text-sm">{error}</p>
         {onRetry ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onRetry}>
             Try again
           </Button>
         ) : null}
