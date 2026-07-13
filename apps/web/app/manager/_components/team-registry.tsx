@@ -198,7 +198,7 @@ export function TeamRegistry({
           <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
             <button
               onClick={() => changeTabSelection('active')}
-              className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
                 tab === 'active'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'hover:text-foreground'
@@ -208,7 +208,7 @@ export function TeamRegistry({
             </button>
             <button
               onClick={() => changeTabSelection('inactive')}
-              className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
                 tab === 'inactive'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'hover:text-foreground'
@@ -218,7 +218,7 @@ export function TeamRegistry({
             </button>
             <button
               onClick={() => changeTabSelection('archived')}
-              className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
                 tab === 'archived'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'hover:text-foreground'

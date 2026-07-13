@@ -110,7 +110,7 @@ export function ProjectDetailsWorkspace({
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('details')}
-            className={`flex items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
+            className={`flex cursor-pointer items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
               activeTab === 'details'
                 ? 'border-primary text-foreground'
                 : 'text-muted-foreground hover:text-foreground border-transparent'
@@ -121,7 +121,7 @@ export function ProjectDetailsWorkspace({
           </button>
           <button
             onClick={() => setActiveTab('members')}
-            className={`flex items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
+            className={`flex cursor-pointer items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
               activeTab === 'members'
                 ? 'border-primary text-foreground'
                 : 'text-muted-foreground hover:text-foreground border-transparent'
@@ -380,7 +380,7 @@ export function ProjectDetailsWorkspace({
                         name="userId"
                         required
                         defaultValue=""
-                        className="bg-background border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                        className="bg-background border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full cursor-pointer rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                       >
                         <option value="" disabled>
                           Select User...
@@ -403,7 +403,7 @@ export function ProjectDetailsWorkspace({
                     <Button
                       type="submit"
                       disabled={isAddPending}
-                      className="w-full font-semibold shadow-md transition-shadow hover:shadow-lg"
+                      className="w-full cursor-pointer font-semibold shadow-md transition-shadow hover:shadow-lg"
                     >
                       {isAddPending ? (
                         <>
