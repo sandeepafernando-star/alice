@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getDbUser, getUser } from '../../lib/auth';
+import { getDbUser } from '../../lib/auth';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import { UserRegistry } from '@/app/users/_components/user-registry';
 import {
@@ -12,15 +12,15 @@ export default async function UsersDashboard({
 }: Readonly<{
   searchParams: Promise<{ page?: string; limit?: string }>;
 }>) {
-  const resolvedSearchParams = await searchParams;
-  const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);
-  const limit = Number.parseInt(resolvedSearchParams.limit ?? '10', 10);
-
-  const user = await getUser();
+  const user = await getDbUser();
 
   if (!user) {
     redirect('/login');
   }
+
+  const resolvedSearchParams = await searchParams;
+  const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);
+  const limit = Number.parseInt(resolvedSearchParams.limit ?? '10', 10);
 
   const dbUser = await getDbUser();
   const currentUserRole = dbUser?.role ?? 'member';
@@ -40,11 +40,7 @@ export default async function UsersDashboard({
   }
 
   return (
-    <DashboardShell
-      title="Users"
-      description="Manage application users, assign workspace roles, and control access."
-      user={user}
-    >
+    <DashboardShell description="Manage application users, assign workspace roles, and control access.">
       <UserRegistry
         users={usersData.users}
         totalCount={usersData.totalCount}

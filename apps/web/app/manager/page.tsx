@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
-import { getUser, getDbUser } from '@/lib/auth';
+import { getDbUser } from '@/lib/auth';
 import { TeamRegistry } from './_components/team-registry';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import {
@@ -32,12 +31,6 @@ export default async function ManagerDashboardPage({
 
   const search = resolvedSearchParams.search ?? '';
 
-  const user = await getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
   const dbUser = await getDbUser();
   const userRole = dbUser?.role ?? 'member';
 
@@ -59,11 +52,7 @@ export default async function ManagerDashboardPage({
   }
 
   return (
-    <DashboardShell
-      title="Team"
-      description="Manage teams workload and engineering resources."
-      user={user}
-    >
+    <DashboardShell description="Manage teams workload and engineering resources.">
       <TeamRegistry
         teams={teamsResult.teams}
         totalCount={teamsResult.totalCount}

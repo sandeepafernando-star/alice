@@ -156,6 +156,8 @@ export function ProjectForm({
         start_date: startDate || null,
         end_date: endDate || null,
         status: status,
+        attributes_config: null,
+        workflow_config: null,
       };
 
       let result;

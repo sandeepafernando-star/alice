@@ -123,24 +123,24 @@ model users {
   notifications           notifications[]
   created_notifications   notifications[]   @relation("NotificationCreatedBy")
   updated_notifications   notifications[]   @relation("NotificationUpdatedBy")
-  created_attributes      attributes[]      @relation("AttributeCreatedBy")
-  updated_attributes      attributes[]      @relation("AttributeUpdatedBy")
 }
 
 model projects {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  key         String        @unique
-  description String?
-  owner_id    String        @db.Uuid
-  start_date  DateTime?     @db.Date
-  end_date    DateTime?     @db.Date
-  status      ProjectStatus @default(active)
-  deleted_at  DateTime?     @db.Timestamptz(6)
-  created_by  String?       @db.Uuid
-  created_at  DateTime      @default(now()) @db.Timestamptz(6)
-  updated_by  String?       @db.Uuid
-  updated_at  DateTime      @updatedAt @db.Timestamptz(6)
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  key               String        @unique
+  description       String?
+  owner_id          String        @db.Uuid
+  start_date        DateTime?     @db.Date
+  end_date          DateTime?     @db.Date
+  attributes_config Json?
+  workflow_config   Json?
+  status            ProjectStatus @default(active)
+  deleted_at        DateTime?     @db.Timestamptz(6)
+  created_by        String?       @db.Uuid
+  created_at        DateTime      @default(now()) @db.Timestamptz(6)
+  updated_by        String?       @db.Uuid
+  updated_at        DateTime      @updatedAt @db.Timestamptz(6)
 
   owner           users             @relation("ProjectOwner", fields: [owner_id], references: [id])
   created_by_user users?            @relation("ProjectCreatedBy", fields: [created_by], references: [id], onDelete: SetNull)
@@ -148,21 +148,6 @@ model projects {
   members         project_members[]
   sprints         sprints[]
   work_items      work_items[]
-}
-
-model attributes {
-  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  work_item_types WorkItemType[]
-  content         Json
-  status          RecordStatus   @default(active)
-  deleted_at      DateTime?      @db.Timestamptz(6)
-  created_by      String?        @db.Uuid
-  created_at      DateTime       @default(now()) @db.Timestamptz(6)
-  updated_by      String?        @db.Uuid
-  updated_at      DateTime       @updatedAt @db.Timestamptz(6)
-
-  created_by_user users? @relation("AttributeCreatedBy", fields: [created_by], references: [id], onDelete: SetNull)
-  updated_by_user users? @relation("AttributeUpdatedBy", fields: [updated_by], references: [id], onDelete: SetNull)
 }
 
 model project_members {

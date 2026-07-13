@@ -89,6 +89,8 @@ const mockProject = {
   created_by: null,
   deleted_at: null,
   updated_by: null,
+  attributes_config: null,
+  workflow_config: null,
   owner: {
     id: 'user-mgr-1',
     name: 'Manager One',
@@ -171,6 +173,8 @@ describe('ProjectForm Component', () => {
         start_date: '2026-07-10',
         end_date: '2026-08-10',
         status: 'active',
+        attributes_config: null,
+        workflow_config: null,
       });
     });
 
@@ -236,6 +240,8 @@ describe('ProjectForm Component', () => {
         start_date: '2026-07-10',
         end_date: '2026-08-10',
         status: 'active',
+        attributes_config: null,
+        workflow_config: null,
       });
     });
 

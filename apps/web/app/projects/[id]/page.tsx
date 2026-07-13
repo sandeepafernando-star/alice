@@ -1,5 +1,5 @@
-import { redirect, notFound } from 'next/navigation';
-import { getUser, getDbUser } from '@/lib/auth';
+import { notFound } from 'next/navigation';
+import { getDbUser } from '@/lib/auth';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import {
   getProjectDetails,
@@ -15,11 +15,6 @@ export default async function ProjectDetailsPage({
 }>) {
   const resolvedParams = await params;
   const projectId = resolvedParams.id;
-
-  const user = await getUser();
-  if (!user) {
-    redirect('/login');
-  }
 
   const dbUser = await getDbUser();
   const userRole = dbUser?.role ?? 'member';
@@ -38,9 +33,7 @@ export default async function ProjectDetailsPage({
 
   return (
     <DashboardShell
-      title="Projects"
       description={`Workspace configurations for ${project.name}`}
-      user={user}
     >
       <div className="w-full">
         <ProjectDetailsWorkspace

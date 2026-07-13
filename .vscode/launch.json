@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Monorepo: attach",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["turbo", "run", "dev"],
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Web: Next.js (server)",
       "type": "node",
       "request": "launch",

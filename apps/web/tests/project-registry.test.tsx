@@ -83,6 +83,8 @@ const mockProjects: Project[] = [
     created_by: null,
     deleted_at: null,
     updated_by: null,
+    attributes_config: null,
+    workflow_config: null,
     owner: {
       id: 'user-1',
       name: 'Bob Manager',
@@ -103,6 +105,8 @@ const mockProjects: Project[] = [
     created_by: null,
     deleted_at: null,
     updated_by: null,
+    attributes_config: null,
+    workflow_config: null,
     owner: {
       id: 'user-1',
       name: 'Bob Manager',

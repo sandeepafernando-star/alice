@@ -3,19 +3,17 @@ import { SidebarInset, SidebarProvider } from '@repo/ui/components/ui/sidebar';
 import { TooltipProvider } from '@repo/ui/components/ui/tooltip';
 import { DashboardHeader } from './dashboard-header';
 import { DashboardSidebar } from './dashboard-sidebar';
-import { User } from '@supabase/supabase-js';
+import type { DashboardBreadcrumbOverride } from './dashboard-breadcrumb';
 
 type DashboardShellProps = {
-  title: string;
   description?: string;
-  user: User;
+  breadcrumbOverrides?: DashboardBreadcrumbOverride[];
   children: ReactNode;
 };
 
-export function DashboardShell({
-  title,
+export async function DashboardShell({
   description,
-  user,
+  breadcrumbOverrides,
   children,
 }: Readonly<DashboardShellProps>) {
   return (
@@ -24,9 +22,8 @@ export function DashboardShell({
         <DashboardSidebar />
         <SidebarInset>
           <DashboardHeader
-            title={title}
             description={description}
-            user={user}
+            breadcrumbOverrides={breadcrumbOverrides}
           />
           <div className="flex flex-1 flex-col overflow-y-auto p-6">
             {children}

@@ -30,13 +30,6 @@ export type CreateProjectInput = Omit<
 export type UpdateProjectInput = Partial<CreateProjectInput>;
 
 export class ProjectsService {
-  async listProjects(): Promise<ProjectRowWithOwner[]>;
-  async listProjects(
-    page: number,
-    limit: number,
-    status?: 'active' | 'archived',
-    search?: string
-  ): Promise<{ projects: ProjectRowWithOwner[]; totalCount: number }>;
   async listProjects(
     page?: number,
     limit?: number,

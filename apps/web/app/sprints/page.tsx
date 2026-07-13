@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/auth';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import { SprintsWorkspace } from '@/app/sprints/_components/sprints-workspace';
 import { getSprintsPaginatedServer } from '@/app/sprints/_services/sprints.service.server';
@@ -11,12 +9,6 @@ export default async function SprintsPage({
 }: Readonly<{
   searchParams: Promise<{ page?: string; limit?: string; tab?: string }>;
 }>) {
-  const user = await getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
   const resolvedSearchParams = await searchParams;
   const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);
   const limit = Number.parseInt(resolvedSearchParams.limit ?? '5', 10);
@@ -38,11 +30,7 @@ export default async function SprintsPage({
   }
 
   return (
-    <DashboardShell
-      title="Sprints"
-      description="Plan and track team sprints."
-      user={user}
-    >
+    <DashboardShell description="Plan and track team sprints.">
       <SprintsWorkspace
         sprints={sprintsData.sprints}
         pagination={sprintsData.pagination}

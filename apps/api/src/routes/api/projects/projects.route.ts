@@ -7,6 +7,7 @@ import {
 import { projectsService } from './projects.service';
 import { createProjectSchema, updateProjectSchema } from './projects.schemas';
 import { parsePagination } from '../../../lib/pagination';
+import { ProjectRowWithOwner } from './projects.repository';
 
 const projectsRouter: Router = Router();
 
@@ -21,12 +22,12 @@ projectsRouter.get(
       const pagination = parsePagination(req);
       if (pagination) {
         const { page, limit } = pagination;
-        const result = await projectsService.listProjects(
+        const result = (await projectsService.listProjects(
           page,
           limit,
           statusQuery,
           searchQuery
-        );
+        )) as { projects: ProjectRowWithOwner[]; totalCount: number };
         const totalPages = Math.ceil(result.totalCount / limit);
         return res.json({
           projects: result.projects,

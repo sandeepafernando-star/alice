@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
-import { getUser, getDbUser } from '@/lib/auth';
+import { getDbUser } from '@/lib/auth';
 import { ProjectRegistry } from '@/app/projects/_components/project-registry';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import {
@@ -25,12 +24,6 @@ export default async function ProjectsPage({
     resolvedSearchParams.tab === 'archived' ? 'archived' : 'active';
   const search = resolvedSearchParams.search ?? '';
 
-  const user = await getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
   const dbUser = await getDbUser();
   const userRole = dbUser?.role ?? 'member';
 
@@ -52,11 +45,7 @@ export default async function ProjectsPage({
   }
 
   return (
-    <DashboardShell
-      title="Projects"
-      description="Organize project administration."
-      user={user}
-    >
+    <DashboardShell description="Organize project administration.">
       <ProjectRegistry
         projects={projectsResult.projects}
         totalCount={projectsResult.totalCount}
