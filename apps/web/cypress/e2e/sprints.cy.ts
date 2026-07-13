@@ -1,20 +1,4 @@
-describe('Sprints Workspace', () => {
-  before(() => {
-    // Clean up old test sprints before running the test suite
-    cy.task('cleanTestSprints');
-  });
-
-  after(() => {
-    // Clean up test sprints after running the test suite
-    cy.task('cleanTestSprints');
-  });
-
-  beforeEach(() => {
-    // Log in before each test.
-    cy.login();
-  });
-
-  function createSprint(sprintName: string, goal: string) {
+function createSprint(sprintName: string, goal: string) {
     // Click "Add Sprint" button
     cy.contains('button', 'Add Sprint').click();
 
@@ -44,7 +28,23 @@ describe('Sprints Workspace', () => {
 
     // Wait for the modal success timer to fire and unmount the modal
     cy.get('textarea#sprint-goal').should('not.exist');
-  }
+}
+
+describe('Sprints Workspace', () => {
+  before(() => {
+    // Clean up old test sprints before running the test suite
+    cy.task('cleanTestSprints');
+  });
+
+  after(() => {
+    // Clean up test sprints after running the test suite
+    cy.task('cleanTestSprints');
+  });
+
+  beforeEach(() => {
+    // Log in before each test.
+    cy.login();
+  });
 
   it('should display the sprints list, add a sprint, and edit it', () => {
     // 1. Visit /sprints
