@@ -19,16 +19,17 @@ declare global {
   }
 }
 
-Cypress.Commands.add('login', (
-  email = Cypress.env('TEST_USER_EMAIL'),
-  password = Cypress.env('TEST_USER_PASSWORD')
-) => {
-  if (!email || !password) {
-    throw new Error('Cypress login error: TEST_USER_EMAIL or TEST_USER_PASSWORD environment variable is missing.');
-  }
-  cy.visit('/login');
-  cy.get('#email').type(email);
-  cy.get('#password').type(password);
-  cy.get('button[type="submit"]').click();
-  cy.url().should('include', '/dashboard');
+Cypress.Commands.add('login', (email, password) => {
+  cy.env(['TEST_USER_EMAIL', 'TEST_USER_PASSWORD']).then((env) => {
+    const finalEmail = email || env.TEST_USER_EMAIL;
+    const finalPassword = password || env.TEST_USER_PASSWORD;
+    if (!finalEmail || !finalPassword) {
+      throw new Error('Cypress login error: TEST_USER_EMAIL or TEST_USER_PASSWORD environment variable is missing.');
+    }
+    cy.visit('/login');
+    cy.get('#email').type(finalEmail);
+    cy.get('#password').type(finalPassword);
+    cy.get('button[type="submit"]').click();
+    cy.url().should('include', '/dashboard');
+  });
 });

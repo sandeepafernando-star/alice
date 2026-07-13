@@ -82,7 +82,7 @@ export class SprintsRepository {
   }
 
   async updateStatus(
-    userId: string,
+    _userId: string,
     sprintId: string,
     status: SprintRow['status']
   ): Promise<SprintRowWithProject> {
@@ -90,7 +90,6 @@ export class SprintsRepository {
       .from('sprints')
       .update({ status })
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .select('*, project:projects(id, name, key)')
       .single();
 
@@ -103,14 +102,13 @@ export class SprintsRepository {
   }
 
   async findById(
-    userId: string,
+    _userId: string,
     sprintId: string
   ): Promise<SprintRowWithProject | null> {
     const { data, error } = await supabase
       .from('sprints')
       .select('*, project:projects(id, name, key)')
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .maybeSingle();
 
     if (error) {
@@ -122,7 +120,7 @@ export class SprintsRepository {
   }
 
   async update(
-    userId: string,
+    _userId: string,
     sprintId: string,
     input: {
       name: string;
@@ -143,7 +141,6 @@ export class SprintsRepository {
         updated_at: new Date().toISOString(),
       })
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .select('*, project:projects(id, name, key)')
       .single();
 
