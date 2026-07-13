@@ -1,4 +1,4 @@
-import { DbUser } from '@/app/users/_services/users.service';
+import { User as DbUser } from '@/app/users/_services/users.service';
 import { apiFetch as apiServerFetch } from '@/lib/api/api-client.server';
 
 import { Tables } from '@repo/types';

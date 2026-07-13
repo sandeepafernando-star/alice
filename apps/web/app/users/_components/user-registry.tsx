@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
+import { usePaginationNavigation } from '@/hooks/use-pagination-navigation';
 import {
   Card,
   CardContent,
@@ -20,12 +21,17 @@ import {
   AlertTriangle,
   UserPlus,
 } from 'lucide-react';
-import { toggleUserActive } from './actions';
+import { toggleUserActive } from '../_services/users.service';
 import { CustomSpinner } from '@/app/users/_components/user-spinner';
-import { DbUser } from '@/app/users/_services/users.service';
+import { Pagination } from '@/components/pagination';
+import type { User } from '../_services/users.service';
 
 interface UserRegistryProps {
-  readonly users: DbUser[];
+  readonly users: User[];
+  readonly totalCount: number;
+  readonly page: number;
+  readonly limit: number;
+  readonly totalPages: number;
   readonly currentUserId?: string | null;
   readonly currentUserRole?: string | null;
 }
@@ -52,51 +58,69 @@ function getAvatarPlaceholder(name: string) {
 
 export function UserRegistry({
   users,
+  totalCount,
+  page,
+  limit,
+  totalPages,
   currentUserId,
   currentUserRole,
 }: Readonly<UserRegistryProps>) {
-  const [mounted, setMounted] = useState(false);
+  const { handlePageChange, handleLimitChange, router } =
+    usePaginationNavigation(totalPages, limit);
 
+  const [mounted, setMounted] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<DbUser | null>(null);
-  const [deactivatingUser, setDeactivatingUser] = useState<DbUser | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isTogglingActive, setIsTogglingActive] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleToggleActive = (user: DbUser) => {
+  const handleToggleActive = (user: User) => {
     if (user.active) {
       // Trigger confirmation modal for deactivation
       setDeactivatingUser(user);
       setError(null);
     } else {
       // Activate immediately
-      startTransition(async () => {
-        const result = await toggleUserActive(user.id, true);
-        if (result.success) {
+      setIsTogglingActive(true);
+      toggleUserActive(user.id, true)
+        .then(() => {
           setError(null);
-        } else {
-          setError(result.error || 'Failed to activate user.');
-        }
-      });
+          router.refresh();
+        })
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : 'Failed to activate user.';
+          setError(message);
+        })
+        .finally(() => {
+          setIsTogglingActive(false);
+        });
     }
   };
 
   const confirmDeactivation = () => {
     if (!deactivatingUser) return;
 
-    startTransition(async () => {
-      const result = await toggleUserActive(deactivatingUser.id, false);
-      if (result.success) {
+    setIsTogglingActive(true);
+    toggleUserActive(deactivatingUser.id, false)
+      .then(() => {
         setDeactivatingUser(null);
         setError(null);
-      } else {
-        setError(result.error || 'Failed to deactivate user.');
-      }
-    });
+        router.refresh();
+      })
+      .catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : 'Failed to deactivate user.';
+        setError(message);
+      })
+      .finally(() => {
+        setIsTogglingActive(false);
+      });
   };
 
   return (
@@ -146,127 +170,146 @@ export function UserRegistry({
               </p>
             </div>
           ) : (
-            <div className="divide-border divide-y">
-              {users.map((usr) => {
-                const isSelf = usr.id === currentUserId;
-                const isDeactivating =
-                  isPending && deactivatingUser?.id === usr.id;
-                return (
-                  <div
-                    key={usr.id}
-                    className="group flex flex-col justify-between gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold shadow-sm transition-all duration-300 group-hover:scale-105 ${
-                          usr.active
-                            ? 'bg-primary/10 text-primary border-primary/20'
-                            : 'bg-muted text-muted-foreground border-muted-foreground/20'
-                        }`}
-                      >
-                        {getAvatarPlaceholder(usr.name)}
-                      </div>
-                      <div className="min-w-0">
-                        <h4
-                          className={`flex items-center gap-2 text-sm leading-none font-semibold transition-colors ${
+            <>
+              <div className="divide-border divide-y">
+                {users.map((usr) => {
+                  const isSelf = usr.id === currentUserId;
+                  const isDeactivating =
+                    isTogglingActive && deactivatingUser?.id === usr.id;
+                  return (
+                    <div
+                      key={usr.id}
+                      className="group flex flex-col justify-between gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold shadow-sm transition-all duration-300 group-hover:scale-105 ${
                             usr.active
-                              ? 'text-foreground group-hover:text-primary'
-                              : 'text-muted-foreground line-through'
+                              ? 'bg-primary/10 text-primary border-primary/20'
+                              : 'bg-muted text-muted-foreground border-muted-foreground/20'
                           }`}
                         >
-                          {usr.name}
-                          {isSelf && (
-                            <span className="bg-primary/25 border-primary/30 text-primary py-0.2 rounded-full border px-1.5 text-[10px] tracking-normal normal-case">
-                              You
-                            </span>
-                          )}
-                        </h4>
-                        <span className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
-                          <Mail className="h-3 w-3" />
-                          <span className="truncate">{usr.email}</span>
-                        </span>
+                          {getAvatarPlaceholder(usr.name)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4
+                            className={`flex items-center gap-2 text-sm leading-none font-semibold transition-colors ${
+                              usr.active
+                                ? 'text-foreground group-hover:text-primary'
+                                : 'text-muted-foreground line-through'
+                            }`}
+                          >
+                            <span className="truncate">{usr.name}</span>
+                            {isSelf && (
+                              <span className="bg-primary/25 border-primary/30 text-primary py-0.2 shrink-0 rounded-full border px-1.5 text-[10px] tracking-normal normal-case">
+                                You
+                              </span>
+                            )}
+                          </h4>
+                          <span className="text-muted-foreground mt-1 flex min-w-0 items-center gap-1 text-xs">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{usr.email}</span>
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 pl-13 sm:gap-4 sm:pl-0">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${getRoleBadgeStyles(usr.role)}`}
-                      >
-                        <Shield className="h-3 w-3" />
-                        {usr.role}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2 pl-13 sm:grid sm:shrink-0 sm:grid-cols-[110px_90px_120px_90px_120px] sm:items-center sm:gap-3 sm:pl-0">
+                        <div className="flex justify-start">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${getRoleBadgeStyles(usr.role)}`}
+                          >
+                            <Shield className="h-3 w-3" />
+                            {usr.role}
+                          </span>
+                        </div>
 
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${
-                          usr.active
-                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
-                            : 'border-rose-500/20 bg-rose-500/10 text-rose-500'
-                        }`}
-                      >
-                        {usr.active ? 'Active' : 'Inactive'}
-                      </span>
+                        <div className="flex justify-start">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${
+                              usr.active
+                                ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
+                                : 'border-rose-500/20 bg-rose-500/10 text-rose-500'
+                            }`}
+                          >
+                            {usr.active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
 
-                      <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                        <span>
+                        <div className="text-muted-foreground flex items-center justify-start gap-1 text-xs">
                           {mounted ? (
-                            <div className="flex gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(usr.created_at).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                }
-                              )}
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 shrink-0" />
+                              <span>
+                                {new Date(usr.created_at).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  }
+                                )}
+                              </span>
                             </div>
                           ) : (
                             <CustomSpinner />
                           )}
-                        </span>
-                      </span>
+                        </div>
 
-                      {currentUserRole === 'admin' && (
-                        <button
-                          disabled={isPending}
-                          onClick={() => setEditingUser(usr)}
-                          className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 cursor-pointer items-center justify-center rounded-md border px-3 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
-                        >
-                          Edit
-                        </button>
-                      )}
+                        <div className="flex justify-start">
+                          {currentUserRole === 'admin' && (
+                            <button
+                              disabled={isTogglingActive}
+                              onClick={() => setEditingUser(usr)}
+                              className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
 
-                      {currentUserRole === 'admin' && !isSelf && (
-                        <button
-                          disabled={isPending}
-                          onClick={() => handleToggleActive(usr)}
-                          className={`focus-visible:ring-ring inline-flex h-8 cursor-pointer items-center justify-center rounded-md px-3 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
-                            usr.active
-                              ? 'border border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
-                              : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                          }`}
-                        >
-                          {isDeactivating && (
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                        <div className="flex justify-start">
+                          {currentUserRole === 'admin' && !isSelf && (
+                            <button
+                              disabled={isTogglingActive}
+                              onClick={() => handleToggleActive(usr)}
+                              className={`focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
+                                usr.active
+                                  ? 'border border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
+                                  : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
+                              }`}
+                            >
+                              {isDeactivating && (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              )}
+                              {!isDeactivating && usr.active && (
+                                <>
+                                  <UserX className="mr-1 h-3 w-3" />
+                                  Deactivate
+                                </>
+                              )}
+                              {!isDeactivating && !usr.active && (
+                                <>
+                                  <UserCheck className="mr-1 h-3 w-3" />
+                                  Activate
+                                </>
+                              )}
+                            </button>
                           )}
-                          {!isDeactivating && usr.active && (
-                            <>
-                              <UserX className="mr-1 h-3 w-3" />
-                              Deactivate
-                            </>
-                          )}
-                          {!isDeactivating && !usr.active && (
-                            <>
-                              <UserCheck className="mr-1 h-3 w-3" />
-                              Activate
-                            </>
-                          )}
-                        </button>
-                      )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+              <Pagination
+                totalCount={totalCount}
+                page={page}
+                limit={limit}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+                label="users"
+              />
+            </>
           )}
         </CardContent>
       </Card>
@@ -312,7 +355,7 @@ export function UserRegistry({
             <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
               <button
                 type="button"
-                disabled={isPending}
+                disabled={isTogglingActive}
                 onClick={() => setDeactivatingUser(null)}
                 className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
@@ -320,11 +363,11 @@ export function UserRegistry({
               </button>
               <button
                 type="button"
-                disabled={isPending}
+                disabled={isTogglingActive}
                 onClick={confirmDeactivation}
                 className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                {isPending ? (
+                {isTogglingActive ? (
                   <>
                     <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                     Deactivating...
@@ -344,7 +387,10 @@ export function UserRegistry({
           <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
             <UserForm
               onClose={() => setIsAddUserOpen(false)}
-              onSuccess={() => setIsAddUserOpen(false)}
+              onSuccess={() => {
+                setIsAddUserOpen(false);
+                router.refresh();
+              }}
             />
           </div>
         </div>
@@ -357,7 +403,10 @@ export function UserRegistry({
             <UserForm
               user={editingUser}
               onClose={() => setEditingUser(null)}
-              onSuccess={() => setEditingUser(null)}
+              onSuccess={() => {
+                setEditingUser(null);
+                router.refresh();
+              }}
             />
           </div>
         </div>

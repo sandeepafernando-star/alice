@@ -1,34 +1,55 @@
+import { redirect } from 'next/navigation';
 import { getDbUser } from '../../lib/auth';
-import { createClient } from '@/lib/supabase/server';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
 import { UserRegistry } from '@/app/users/_components/user-registry';
-import { DbUser } from '@/app/users/_services/users.service';
+import {
+  getUsersListPaginated,
+  type User,
+} from '@/app/users/_services/users.service.server';
 
-export default async function UsersDashboard() {
+export default async function UsersDashboard({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ page?: string; limit?: string }>;
+}>) {
+  const user = await getDbUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  const resolvedSearchParams = await searchParams;
+  const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);
+  const limit = Number.parseInt(resolvedSearchParams.limit ?? '10', 10);
+
   const dbUser = await getDbUser();
   const currentUserRole = dbUser?.role ?? 'member';
 
-  const supabase = await createClient();
-  const { data: dbUsers, error } = await supabase
-    .from('users')
-    .select()
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('error. supabase database error:', error.message);
+  let usersData = {
+    users: [] as User[],
+    totalCount: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  };
+  try {
+    usersData = await getUsersListPaginated(page, limit);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('error. failed to fetch users list via API:', message);
   }
-
-  const usersList: DbUser[] = dbUsers ?? [];
 
   return (
     <DashboardShell description="Manage application users, assign workspace roles, and control access.">
-      <div className="w-full">
-        <UserRegistry
-          users={usersList}
-          currentUserId={dbUser?.id}
-          currentUserRole={currentUserRole}
-        />
-      </div>
+      <UserRegistry
+        users={usersData.users}
+        totalCount={usersData.totalCount}
+        page={usersData.page}
+        limit={usersData.limit}
+        totalPages={usersData.totalPages}
+        currentUserId={user.id}
+        currentUserRole={currentUserRole}
+      />
     </DashboardShell>
   );
 }

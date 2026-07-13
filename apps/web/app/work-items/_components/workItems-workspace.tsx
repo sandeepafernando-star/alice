@@ -1,5 +1,5 @@
-import { DbProject } from '@/app/projects/_services/projects.service';
-import { DbUser } from '@/app/users/_services/users.service';
+import { Project as DbProject } from '@/app/projects/_services/projects.service';
+import { User as DbUser } from '@/app/users/_services/users.service';
 import WorkItemsTable from '@/app/work-items/_components/workItems-table';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 

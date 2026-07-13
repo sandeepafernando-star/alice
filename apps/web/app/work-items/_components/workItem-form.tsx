@@ -13,14 +13,14 @@ import {
   SelectValue,
 } from '@repo/ui/components/ui/select';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { DbUser } from '@/app/users/_services/users.service';
+import { User as DbUser } from '@/app/users/_services/users.service';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import {
   createWorkItem,
   updateWorkItem,
   WorkItemModificationResponse,
 } from '@/app/work-items/_services/workItem.client.service';
-import { DbProject } from '@/app/projects/_services/projects.service';
+import { Project as DbProject } from '@/app/projects/_services/projects.service';
 import { delay } from '@/app/_shared/utility';
 
 interface WorkItemFormProps {

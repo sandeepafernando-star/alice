@@ -3,8 +3,6 @@ import { SidebarInset, SidebarProvider } from '@repo/ui/components/ui/sidebar';
 import { TooltipProvider } from '@repo/ui/components/ui/tooltip';
 import { DashboardHeader } from './dashboard-header';
 import { DashboardSidebar } from './dashboard-sidebar';
-import { getUser } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import type { DashboardBreadcrumbOverride } from './dashboard-breadcrumb';
 
 type DashboardShellProps = {
@@ -18,12 +16,6 @@ export async function DashboardShell({
   breadcrumbOverrides,
   children,
 }: Readonly<DashboardShellProps>) {
-  const user = await getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
   return (
     <TooltipProvider>
       <SidebarProvider>

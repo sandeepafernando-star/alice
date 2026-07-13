@@ -10,6 +10,7 @@ type HomeProps = {
 
 export default async function Home({ searchParams }: Readonly<HomeProps>) {
   const user = await getUser();
+
   const { reset } = await searchParams;
   const resetSuccess = reset === 'success';
 

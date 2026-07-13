@@ -1,87 +1,25 @@
-import { DbUser } from '@/app/users/_services/users.service';
-import { apiFetch } from '@/lib/api/api-client.server';
-import { Tables } from '@repo/types';
+import { apiFetch } from '@/lib/api/api-client';
+import { createProjectsService } from './projects.service.base';
 
-export type DbProject = Tables<'projects'> & {
-  owner?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
-};
+const service = createProjectsService(apiFetch);
 
-export type ProjectListRow = Tables<'projects'> & {
-  owner?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
-};
+export const getProjectList = service.getProjectList;
+export const getProjectListPaginated = service.getProjectListPaginated;
+export const createProject = service.createProject;
+export const updateProject = service.updateProject;
+export const softDeleteProject = service.softDeleteProject;
+export const restoreProject = service.restoreProject;
+export const hardDeleteProject = service.hardDeleteProject;
+export const getProjectDetails = service.getProjectDetails;
+export const getProject = service.getProject;
+export const getProjectMembers = service.getProjectMembers;
+export const addProjectMember = service.addProjectMember;
+export const removeProjectMember = service.removeProjectMember;
 
-const apiProjects = '/api/projects';
-
-export async function getProjectList(): Promise<ProjectListRow[]> {
-  const data = await apiFetch<{ projects: ProjectListRow[] }>(apiProjects, {
-    next: { revalidate: 0 },
-  });
-  return data.projects;
-}
-
-export type CreateProjectInput = Omit<
-  Tables<'projects'>,
-  | 'id'
-  | 'created_at'
-  | 'updated_at'
-  | 'deleted_at'
-  | 'created_by'
-  | 'updated_by'
-  | 'work'
-  | 'attributes_config'
-  | 'workflow_config'
->;
-
-export type UpdateProjectInput = Partial<CreateProjectInput>;
-
-export async function createProject(
-  input: CreateProjectInput
-): Promise<Tables<'projects'>> {
-  const data = await apiFetch<{ project: Tables<'projects'> }>(apiProjects, {
-    method: 'POST',
-    body: JSON.stringify(input),
-  });
-  return data.project;
-}
-
-export async function updateProject(
-  id: string,
-  input: UpdateProjectInput
-): Promise<Tables<'projects'>> {
-  const data = await apiFetch<{ project: Tables<'projects'> }>(
-    `${apiProjects}/${id}`,
-    {
-      method: 'PUT',
-      body: JSON.stringify(input),
-    }
-  );
-  return data.project;
-}
-
-export async function softDeleteProject(
-  id: string
-): Promise<Tables<'projects'>> {
-  const data = await apiFetch<{ project: Tables<'projects'> }>(
-    `${apiProjects}/${id}/soft-delete`,
-    {
-      method: 'PATCH',
-    }
-  );
-  return data.project;
-}
-
-export async function restoreProject(id: string): Promise<Tables<'projects'>> {
-  const data = await apiFetch<{ project: Tables<'projects'> }>(
-    `${apiProjects}/${id}/restore`,
-    {
-      method: 'PATCH',
-    }
-  );
-  return data.project;
-}
-
-export async function hardDeleteProject(id: string): Promise<void> {
-  await apiFetch<void>(`${apiProjects}/${id}`, {
-    method: 'DELETE',
-  });
-}
+export type {
+  Project,
+  GetProjectsPaginatedResponse,
+  CreateProjectInput,
+  UpdateProjectInput,
+  ProjectMemberWithUser,
+} from './projects.service.base';

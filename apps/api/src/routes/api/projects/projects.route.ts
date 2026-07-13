@@ -6,14 +6,38 @@ import {
 } from '../../../middlewares/auth';
 import { projectsService } from './projects.service';
 import { createProjectSchema, updateProjectSchema } from './projects.schemas';
+import { parsePagination } from '../../../lib/pagination';
+import { ProjectRowWithOwner } from './projects.repository';
 
 const projectsRouter: Router = Router();
 
 projectsRouter.get(
   '/',
   requireApiAuth,
-  async (_req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res) => {
     try {
+      const statusQuery = req.query.status as 'active' | 'archived' | undefined;
+      const searchQuery = req.query.search as string | undefined;
+
+      const pagination = parsePagination(req);
+      if (pagination) {
+        const { page, limit } = pagination;
+        const result = (await projectsService.listProjects(
+          page,
+          limit,
+          statusQuery,
+          searchQuery
+        )) as { projects: ProjectRowWithOwner[]; totalCount: number };
+        const totalPages = Math.ceil(result.totalCount / limit);
+        return res.json({
+          projects: result.projects,
+          totalCount: result.totalCount,
+          page,
+          limit,
+          totalPages,
+        });
+      }
+
       const projects = await projectsService.listProjects();
       res.json({ projects });
     } catch (error) {
@@ -56,6 +80,11 @@ projectsRouter.put(
   '/:id',
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+
     const parsed = updateProjectSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: z.treeifyError(parsed.error) });
@@ -64,7 +93,7 @@ projectsRouter.put(
     try {
       const project = await projectsService.updateProject(
         req.userId!,
-        req.params.id!,
+        id,
         parsed.data
       );
       res.json({ project });
@@ -80,11 +109,13 @@ projectsRouter.patch(
   '/:id/soft-delete',
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+
     try {
-      const project = await projectsService.softDeleteProject(
-        req.userId!,
-        req.params.id!
-      );
+      const project = await projectsService.softDeleteProject(req.userId!, id);
       res.json({ project });
     } catch (error) {
       const message =
@@ -100,11 +131,13 @@ projectsRouter.patch(
   '/:id/restore',
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+
     try {
-      const project = await projectsService.restoreProject(
-        req.userId!,
-        req.params.id!
-      );
+      const project = await projectsService.restoreProject(req.userId!, id);
       res.json({ project });
     } catch (error) {
       const message =
@@ -118,14 +151,105 @@ projectsRouter.delete(
   '/:id',
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+
     try {
-      await projectsService.hardDeleteProject(req.userId!, req.params.id!);
+      await projectsService.hardDeleteProject(req.userId!, id);
       res.json({ success: true });
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Failed to hard delete project';
+      res.status(500).json({ error: message });
+    }
+  }
+);
+
+projectsRouter.get(
+  '/:id',
+  requireApiAuth,
+  async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+    try {
+      const project = await projectsService.getProjectById(id);
+      res.json({ project });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to retrieve project';
+      res.status(500).json({ error: message });
+    }
+  }
+);
+
+projectsRouter.get(
+  '/:id/members',
+  requireApiAuth,
+  async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+    try {
+      const members = await projectsService.listMembers(id);
+      res.json({ members });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve project members';
+      res.status(500).json({ error: message });
+    }
+  }
+);
+
+projectsRouter.post(
+  '/:id/members',
+  requireApiAuth,
+  async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    try {
+      await projectsService.addMember(req.userId!, id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to add project member';
+      res.status(500).json({ error: message });
+    }
+  }
+);
+
+projectsRouter.delete(
+  '/:id/members/:userId',
+  requireApiAuth,
+  async (req: AuthenticatedRequest, res) => {
+    const { id, userId } = req.params;
+    if (!id || !userId) {
+      return res
+        .status(400)
+        .json({ error: 'Project ID and User ID are required' });
+    }
+    try {
+      await projectsService.removeMember(req.userId!, id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to remove project member';
       res.status(500).json({ error: message });
     }
   }

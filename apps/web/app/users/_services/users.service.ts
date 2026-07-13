@@ -1,25 +1,18 @@
-import { createClient } from '@/lib/supabase/server';
-import { Tables } from '@repo/types';
+import { apiFetch } from '@/lib/api/api-client';
+import { createUsersService } from './users.service.base';
 
-export type DbUser = Tables<'users'>;
+const service = createUsersService(apiFetch);
 
-export async function getUserList() {
-  const supabase = await createClient();
+export const getUsersList = service.getUsersList;
+export const getUsersListPaginated = service.getUsersListPaginated;
+export const getUserList = service.getUserList;
+export const createUser = service.createUser;
+export const updateUser = service.updateUser;
+export const toggleUserActive = service.toggleUserActive;
 
-  const { data: usersData, error: usersError } = await supabase
-    .from('users')
-    .select(
-      'id, name, email, active, role, status, profile_picture, created_by, created_at, updated_by, updated_at'
-    )
-    .eq('active', true)
-    .order('name', { ascending: true });
-
-  if (usersError) {
-    console.error(
-      'error. supabase database error fetching users:',
-      usersError.message
-    );
-  }
-
-  return usersData ?? [];
-}
+export type {
+  User,
+  GetUsersPaginatedResponse,
+  CreateUserInput,
+  UpdateUserInput,
+} from './users.service.base';
