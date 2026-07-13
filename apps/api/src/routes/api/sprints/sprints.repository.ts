@@ -58,8 +58,7 @@ export class SprintsRepository {
 
     let query = supabase
       .from('sprints')
-      .select('*, project:projects(id, name, key)', { count: 'exact' })
-      .eq('created_by', userId);
+      .select('*, project:projects(id, name, key)', { count: 'exact' });
 
     if (tab === 'archived') {
       query = query.in('status', ['archived']);

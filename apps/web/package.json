@@ -9,13 +9,17 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "checktypes": "next typegen && tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "e2e": "start-server-and-test dev http://localhost:3000 cypress:open",
+    "e2e:ci": "start-server-and-test dev http://localhost:3000 cypress:run"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@novu/nextjs": "^3.17.0",
-    "@repo/ui": "workspace:*",
     "@repo/types": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "@tailwindcss/postcss": "^4.3.1",
@@ -38,8 +42,10 @@
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "cypress": "^15.18.1",
     "eslint": "^9.39.1",
     "jiti": "^2.7.0",
+    "start-server-and-test": "^3.0.11",
     "typescript": "5.9.2",
     "vitest": "^4.1.9"
   }
