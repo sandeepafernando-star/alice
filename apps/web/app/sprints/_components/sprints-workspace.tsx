@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePaginationNavigation } from '@/hooks/use-pagination-navigation';
+import { useDebouncedSearch } from '@/hooks/use-debounced-search';
 import { SprintList } from '@/app/sprints/_components/sprint-list';
 import { SprintForm } from '@/app/sprints/_components/sprint-form';
 import { Sprint } from '@/app/sprints/_services/sprints.service';
@@ -42,30 +43,9 @@ export function SprintsWorkspace({
 
   const isManagerOrAdmin = userRole === 'admin' || userRole === 'manager';
 
-  const [searchQuery, setSearchQuery] = useState(search);
+  const { searchQuery, setSearchQuery } = useDebouncedSearch(search);
   const [isAddSprintOpen, setIsAddSprintOpen] = useState(false);
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
-
-  // Synchronize search input changes with URL queries via debounce
-  useEffect(() => {
-    const currentSearch = searchParams.get('search') ?? '';
-    if (searchQuery === currentSearch) {
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) {
-        params.set('search', searchQuery);
-      } else {
-        params.delete('search');
-      }
-      params.set('page', '1'); // reset page
-      router.push(`${pathname}?${params.toString()}`);
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, pathname, router, searchParams]);
 
   const handleTabChange = (nextTab: 'active' | 'archived') => {
     const params = new URLSearchParams(searchParams.toString());
