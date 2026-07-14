@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@repo/ui/components/ui/button';
+import { Input } from '@repo/ui/components/ui/input';
 
 export default function UploadFiles() {
   const [file, setFile] = useState<File | null>(null);
@@ -33,15 +35,16 @@ export default function UploadFiles() {
   };
 
   return (
-    <div>
-      <input
+    <div className="flex items-center gap-3">
+      <Input
         type="file"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        className="max-w-xs cursor-pointer"
       />
-      <button type="button" onClick={uploadFile}>
+      <Button type="button" onClick={uploadFile}>
         Upload
-      </button>
-      {status ? <p>{status}</p> : null}
+      </Button>
+      {status ? <p className="text-sm font-medium">{status}</p> : null}
     </div>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition, ReactNode, useEffect } from 'react';
+import { useState, useTransition, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePaginationNavigation } from '@/hooks/use-pagination-navigation';
+import { useDebouncedSearch } from '@/hooks/use-debounced-search';
 import {
   Card,
   CardContent,
@@ -10,6 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
+import { Button } from '@repo/ui/components/ui/button';
+import { Input } from '@repo/ui/components/ui/input';
+import { cn } from '@repo/ui/lib/utils';
 import { ProjectForm } from './project-form';
 import {
   softDeleteProject,
@@ -67,7 +71,7 @@ export function ProjectRegistry({
     searchParams,
   } = usePaginationNavigation(totalPages, limit);
 
-  const [searchQuery, setSearchQuery] = useState(search);
+  const { searchQuery, setSearchQuery } = useDebouncedSearch(search);
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -78,27 +82,6 @@ export function ProjectRegistry({
   const isManagerOrAdmin =
     currentUserRole === 'admin' || currentUserRole === 'manager';
   const isAdmin = currentUserRole === 'admin';
-
-  // Synchronize search input changes with URL queries via debounce
-  useEffect(() => {
-    const currentSearch = searchParams.get('search') ?? '';
-    if (searchQuery === currentSearch) {
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) {
-        params.set('search', searchQuery);
-      } else {
-        params.delete('search');
-      }
-      params.set('page', '1'); // reset page
-      router.push(`${pathname}?${params.toString()}`);
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, pathname, router, searchParams]);
 
   const handleTabChange = (newTab: 'active' | 'archived') => {
     const params = new URLSearchParams(searchParams.toString());
@@ -174,12 +157,13 @@ export function ProjectRegistry({
         <div className="text-destructive bg-destructive/10 border-destructive/20 relative flex items-center gap-2 rounded-lg border p-3 text-sm">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
-          <button
+          <Button
+            variant="link"
             onClick={() => setError(null)}
-            className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+            className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 
@@ -187,51 +171,55 @@ export function ProjectRegistry({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-md flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <input
+          <Input
             type="text"
             placeholder="Search projects by name, key, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-background/50 h-10 py-2 pr-4 pl-10"
           />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Tabs */}
           <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => handleTabChange('active')}
-              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                 tab === 'active'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Active
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => handleTabChange('archived')}
-              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                 tab === 'archived'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Archived
-            </button>
+            </Button>
           </div>
 
           {isManagerOrAdmin && (
-            <button
+            <Button
               onClick={() => {
                 setProjectToEdit(null);
                 setIsAddProjectOpen(true);
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="h-10 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               Add Project
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -352,14 +340,14 @@ export function ProjectRegistry({
                                 </button>
                               )
                             : isManagerOrAdmin && (
-                                <button
+                                <Button
                                   disabled={isPending}
                                   onClick={() => handleRestore(proj)}
-                                  className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                  className="h-8 w-full border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white disabled:opacity-50"
                                 >
                                   <RefreshCw className="mr-1 h-3 w-3 shrink-0" />
                                   Restore
-                                </button>
+                                </Button>
                               )}
                         </div>
 
@@ -376,14 +364,14 @@ export function ProjectRegistry({
                                 </button>
                               )
                             : isAdmin && (
-                                <button
+                                <Button
                                   disabled={isPending}
                                   onClick={() => handleHardDelete(proj)}
-                                  className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                                  className="h-8 w-full border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm hover:bg-rose-600 hover:text-white disabled:opacity-50"
                                 >
                                   <Trash2 className="mr-1 h-3 w-3 shrink-0" />
                                   Purge
-                                </button>
+                                </Button>
                               )}
                         </div>
                       </div>
@@ -474,22 +462,23 @@ export function ProjectRegistry({
             </div>
 
             <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 disabled={isPending}
                 onClick={() => setProjectToDelete(null)}
-                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="h-9 px-4 text-xs font-semibold"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isPending}
                 onClick={confirmDelete}
-                className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none"
+                className="bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
               >
                 {deleteButtonText}
-              </button>
+              </Button>
             </div>
           </dialog>
         </div>

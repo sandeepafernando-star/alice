@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from '@repo/ui/components/ui/card';
 import { Button } from '@repo/ui/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/ui/select';
+import { cn } from '@repo/ui/lib/utils';
 import { addMemberAction, removeMemberAction } from './actions';
 import type {
   Project,
@@ -108,28 +116,32 @@ export function ProjectDetailsWorkspace({
       {/* Tabs Selector */}
       <div className="border-border border-b">
         <div className="flex gap-4">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setActiveTab('details')}
-            className={`flex cursor-pointer items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
+            className={cn(
+              'flex h-auto cursor-pointer items-center gap-1.5 rounded-none border-b-2 bg-transparent px-1 pt-0 pb-3 text-sm font-semibold whitespace-nowrap transition-all hover:bg-transparent focus:outline-none',
               activeTab === 'details'
                 ? 'border-primary text-foreground'
                 : 'text-muted-foreground hover:text-foreground border-transparent'
-            }`}
+            )}
           >
             <Info className="h-4 w-4" />
             Project Details
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => setActiveTab('members')}
-            className={`flex cursor-pointer items-center gap-1.5 border-b-2 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none ${
+            className={cn(
+              'flex h-auto cursor-pointer items-center gap-1.5 rounded-none border-b-2 bg-transparent px-1 pt-0 pb-3 text-sm font-semibold whitespace-nowrap transition-all hover:bg-transparent focus:outline-none',
               activeTab === 'members'
                 ? 'border-primary text-foreground'
                 : 'text-muted-foreground hover:text-foreground border-transparent'
-            }`}
+            )}
           >
             <Users className="h-4 w-4" />
             Project Members ({members.length})
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -281,12 +293,13 @@ export function ProjectDetailsWorkspace({
                 <div className="text-destructive bg-destructive/10 border-destructive/20 relative flex items-center gap-2 rounded-lg border p-3 text-sm">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>{error}</span>
-                  <button
+                  <Button
+                    variant="link"
                     onClick={() => setError(null)}
-                    className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+                    className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
                   >
                     Dismiss
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -333,11 +346,13 @@ export function ProjectDetailsWorkspace({
                         </div>
 
                         {isManagerOrAdmin && (
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon"
                             disabled={isPending}
                             onClick={() => handleRemoveMember(member.user_id)}
-                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors focus:outline-none disabled:opacity-50"
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors disabled:opacity-50"
                             title={`Remove ${userName}`}
                           >
                             {isPending && deletingUserId === member.user_id ? (
@@ -345,7 +360,7 @@ export function ProjectDetailsWorkspace({
                             ) : (
                               <Trash2 className="h-4 w-4" />
                             )}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     );
@@ -375,22 +390,21 @@ export function ProjectDetailsWorkspace({
                 ) : (
                   <form action={executeAddAction} className="space-y-4">
                     <div className="space-y-1.5">
-                      <select
-                        id="userId"
-                        name="userId"
-                        required
-                        defaultValue=""
-                        className="bg-background border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full cursor-pointer rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                      >
-                        <option value="" disabled>
-                          Select User...
-                        </option>
-                        {candidateUsers.map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.name} ({u.email})
-                          </option>
-                        ))}
-                      </select>
+                      <Select name="userId" required>
+                        <SelectTrigger
+                          id="userId"
+                          className="bg-background border-input h-10 w-full"
+                        >
+                          <SelectValue placeholder="Select User..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {candidateUsers.map((u) => (
+                            <SelectItem key={u.id} value={u.id}>
+                              {u.name} ({u.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {addFormState.error && (
