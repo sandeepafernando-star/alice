@@ -59,68 +59,27 @@ interface Task {
   dueDate: string;
 }
 
+function createTask(
+  id: string,
+  title: string,
+  description: string,
+  statusAndPriority: string,
+  assignee: string,
+  category: string,
+  dueDate: string
+): Task {
+  const [status, priority] = statusAndPriority.split(':') as [Status, Priority];
+  return { id, title, description, status, priority, assignee, category, dueDate };
+}
+
 // Initial realistic task data
 const INITIAL_TASKS: Task[] = [
-  {
-    id: 'ALICE-101',
-    title: 'Integrate Supabase Auth',
-    description: 'Setup Supabase SSR authentication client and middleware for secure route protection.',
-    status: 'ToDo',
-    priority: 'high',
-    assignee: 'Alice Smith',
-    category: 'Security',
-    dueDate: '2026-07-20',
-  },
-  {
-    id: 'ALICE-104',
-    title: 'Design Landing Page Hero Section',
-    description: 'Implement modern glassmorphism aesthetic with floating particles and grid layout.',
-    status: 'ToDo',
-    priority: 'medium',
-    assignee: 'Bob Jones',
-    category: 'Design',
-    dueDate: '2026-07-25',
-  },
-  {
-    id: 'ALICE-102',
-    title: 'Create Reusable Table Component',
-    description: 'Build a generic table with sorting, search filtering, and paginated pagination state.',
-    status: 'InProgress',
-    priority: 'high',
-    assignee: 'Charlie Brown',
-    category: 'UI Components',
-    dueDate: '2026-07-18',
-  },
-  {
-    id: 'ALICE-105',
-    title: 'Write API Integration Tests',
-    description: 'Write robust integration test suites for project services and database operations.',
-    status: 'InProgress',
-    priority: 'low',
-    assignee: 'David Green',
-    category: 'QA / Testing',
-    dueDate: '2026-07-30',
-  },
-  {
-    id: 'ALICE-103',
-    title: 'Setup GitHub Actions CI Pipeline',
-    description: 'Setup standard GitHub actions workflow to run linters, typechecks, and tests automatically.',
-    status: 'InReview',
-    priority: 'high',
-    assignee: 'Alice Smith',
-    category: 'DevOps',
-    dueDate: '2026-07-16',
-  },
-  {
-    id: 'ALICE-100',
-    title: 'Monorepo Workspace Initialization',
-    description: 'Configure pnpm-workspace and turbo pipelines for web apps and packages packages.',
-    status: 'Done',
-    priority: 'medium',
-    assignee: 'Eve White',
-    category: 'Infrastructure',
-    dueDate: '2026-07-10',
-  },
+  createTask('ALICE-101', 'Integrate Supabase Auth', 'Setup Supabase SSR authentication client and middleware for secure route protection.', 'ToDo:high', 'Alice Smith', 'Security', '2026-07-20'),
+  createTask('ALICE-104', 'Design Landing Page Hero Section', 'Implement modern glassmorphism aesthetic with floating particles and grid layout.', 'ToDo:medium', 'Bob Jones', 'Design', '2026-07-25'),
+  createTask('ALICE-102', 'Create Reusable Table Component', 'Build a generic table with sorting, search filtering, and paginated pagination state.', 'InProgress:high', 'Charlie Brown', 'UI Components', '2026-07-18'),
+  createTask('ALICE-105', 'Write API Integration Tests', 'Write robust integration test suites for project services and database operations.', 'InProgress:low', 'David Green', 'QA / Testing', '2026-07-30'),
+  createTask('ALICE-103', 'Setup GitHub Actions CI Pipeline', 'Setup standard GitHub actions workflow to run linters, typechecks, and tests automatically.', 'InReview:high', 'Alice Smith', 'DevOps', '2026-07-16'),
+  createTask('ALICE-100', 'Monorepo Workspace Initialization', 'Configure pnpm-workspace and turbo pipelines for web apps and packages packages.', 'Done:medium', 'Eve White', 'Infrastructure', '2026-07-10'),
 ];
 
 const COLUMNS: { id: Status; title: string; color: string; border: string; bg: string }[] = [
@@ -478,46 +437,52 @@ export function KanbanBoard() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-muted/20 p-2.5 border rounded-lg">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-wider block mb-1">
-                      Assignee
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm">
-                        {getInitials(selectedTask.assignee)}
-                      </div>
-                      <span className="font-medium text-xs">{selectedTask.assignee}</span>
+                  {[
+                    {
+                      label: 'Assignee',
+                      content: (
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm">
+                            {getInitials(selectedTask.assignee)}
+                          </div>
+                          <span className="font-medium text-xs">{selectedTask.assignee}</span>
+                        </div>
+                      ),
+                    },
+                    {
+                      label: 'Category',
+                      content: (
+                        <span className="inline-flex items-center gap-1 font-medium text-xs">
+                          <Tag className="w-3.5 h-3.5 text-primary" />
+                          {selectedTask.category}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: 'Due Date',
+                      content: (
+                        <span className="inline-flex items-center gap-1 font-medium text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-primary" />
+                          {selectedTask.dueDate}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: 'Current Status',
+                      content: (
+                        <span className="font-semibold text-xs capitalize text-zinc-700 dark:text-zinc-300">
+                          {COLUMNS.find(c => c.id === selectedTask.status)?.title}
+                        </span>
+                      ),
+                    },
+                  ].map(item => (
+                    <div key={item.label} className="bg-muted/20 p-2.5 border rounded-lg">
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-wider block mb-1">
+                        {item.label}
+                      </span>
+                      {item.content}
                     </div>
-                  </div>
-
-                  <div className="bg-muted/20 p-2.5 border rounded-lg">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-wider block mb-1">
-                      Category
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-medium text-xs">
-                      <Tag className="w-3.5 h-3.5 text-primary" />
-                      {selectedTask.category}
-                    </span>
-                  </div>
-
-                  <div className="bg-muted/20 p-2.5 border rounded-lg">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-wider block mb-1">
-                      Due Date
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-medium text-xs">
-                      <Calendar className="w-3.5 h-3.5 text-primary" />
-                      {selectedTask.dueDate}
-                    </span>
-                  </div>
-
-                  <div className="bg-muted/20 p-2.5 border rounded-lg">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-wider block mb-1">
-                      Current Status
-                    </span>
-                    <span className="font-semibold text-xs capitalize text-zinc-700 dark:text-zinc-300">
-                      {COLUMNS.find(c => c.id === selectedTask.status)?.title}
-                    </span>
-                  </div>
+                  ))}
                 </div>
 
                 <div>
