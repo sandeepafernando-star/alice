@@ -60,9 +60,10 @@ describe('UserForm Component', () => {
     fireEvent.change(screen.getByLabelText(/Email Address/i), {
       target: { value: 'erlich@bachmanity.com' },
     });
-    fireEvent.change(screen.getByLabelText(/Workspace Role/i), {
-      target: { value: 'member' },
-    });
+    const roleSelect = screen.getByLabelText(/Workspace Role/i);
+    fireEvent.click(roleSelect);
+    const option = screen.getByRole('option', { name: 'Member' });
+    fireEvent.click(option);
 
     const form = screen.getByLabelText(/Full Name/i).closest('form')!;
     fireEvent.submit(form);
@@ -104,13 +105,15 @@ describe('UserForm Component', () => {
     const nameInput = screen.getByLabelText(/Full Name/i);
     expect(nameInput).toHaveValue('Erlich Bachman');
     const roleSelect = screen.getByLabelText(/Workspace Role/i);
-    expect(roleSelect).toHaveValue('member');
+    expect(roleSelect).toHaveTextContent('Member');
 
     // Edit Name and Role
     fireEvent.change(nameInput, {
       target: { value: 'Erlich Bachman Updated' },
     });
-    fireEvent.change(roleSelect, { target: { value: 'manager' } });
+    fireEvent.click(roleSelect);
+    const managerOption = screen.getByRole('option', { name: 'Manager' });
+    fireEvent.click(managerOption);
 
     const form = nameInput.closest('form')!;
     fireEvent.submit(form);

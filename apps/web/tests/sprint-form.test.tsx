@@ -91,7 +91,9 @@ describe('SprintForm Component', () => {
     const projectSelect = screen.getByLabelText(/Project/i);
     expect(projectSelect).toBeInTheDocument();
 
-    const options = screen.getAllByRole('option');
+    const options = screen
+      .getAllByRole('option', { hidden: true })
+      .filter((opt) => (opt as HTMLOptionElement).value !== '');
     // active projects should be Project Alpha, Project Beta.
     // Inactive and deleted should be filtered.
     expect(options).toHaveLength(2);
@@ -160,6 +162,13 @@ describe('SprintForm Component', () => {
     fireEvent.change(screen.getByLabelText(/Goal/i), {
       target: { value: 'Achieve project milestone' },
     });
+
+    // Select project
+    const projectSelect = screen.getByLabelText(/Project/i);
+    fireEvent.click(projectSelect);
+    const option = screen.getByRole('option', { name: 'Project Alpha (PAL)' });
+    fireEvent.click(option);
+
     fireEvent.change(screen.getByLabelText(/Start date/i), {
       target: { value: '2026-07-10' },
     });

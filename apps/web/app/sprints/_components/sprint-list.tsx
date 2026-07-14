@@ -105,16 +105,17 @@ export function SprintStatusDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           disabled={isUpdating}
           className={cn(
-            'inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase transition-colors focus:outline-none disabled:opacity-50',
+            'inline-flex h-auto cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase transition-colors focus:outline-none disabled:opacity-50',
             STATUS_STYLES[sprint.status]
           )}
         >
           {sprint.status}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {STATUSES.map((status) => (
@@ -213,20 +214,19 @@ function SprintListItem({
           <div />
         )}
         {onEditSprint && (
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => onEditSprint(sprint)}
-            className="border-input hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-20 cursor-pointer items-center justify-center rounded-md border text-[11px] font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none shrink-0"
+            className="h-8 w-20 shrink-0 text-[11px] font-semibold shadow-sm"
           >
             Edit
-          </button>
+          </Button>
         )}
       </div>
     </li>
   );
 }
-
-
 
 type SprintListContentProps = {
   isLoading: boolean;
@@ -338,14 +338,14 @@ export function SprintList({
           </CardDescription>
         </div>
         {onAddSprint && (
-          <button
+          <Button
             type="button"
             onClick={onAddSprint}
-            className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+            className="h-10 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add Sprint
-          </button>
+          </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-4">

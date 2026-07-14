@@ -24,6 +24,8 @@ import {
 import { toggleUserActive } from '../_services/users.service';
 import { CustomSpinner } from '@/app/users/_components/user-spinner';
 import { Pagination } from '@/components/pagination';
+import { Button } from '@repo/ui/components/ui/button';
+import { cn } from '@repo/ui/lib/utils';
 import type { User } from '../_services/users.service';
 
 interface UserRegistryProps {
@@ -130,12 +132,13 @@ export function UserRegistry({
           <div className="text-destructive bg-destructive/10 border-destructive/20 absolute top-4 right-4 left-4 z-10 flex items-center gap-2 rounded-lg border p-3 text-sm">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
-            <button
+            <Button
+              variant="link"
               onClick={() => setError(null)}
-              className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+              className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
             >
               Dismiss
-            </button>
+            </Button>
           </div>
         )}
 
@@ -151,13 +154,13 @@ export function UserRegistry({
             </CardDescription>
           </div>
           {currentUserRole === 'admin' && (
-            <button
+            <Button
               onClick={() => setIsAddUserOpen(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="h-10 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
             >
               <UserPlus className="mr-1.5 h-3.5 w-3.5" />
               Add User
-            </button>
+            </Button>
           )}
         </CardHeader>
         <CardContent>
@@ -256,26 +259,28 @@ export function UserRegistry({
 
                         <div className="flex justify-start">
                           {currentUserRole === 'admin' && (
-                            <button
+                            <Button
+                              variant="outline"
                               disabled={isTogglingActive}
                               onClick={() => setEditingUser(usr)}
-                              className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
+                              className="h-8 w-full text-[11px] font-medium shadow-sm"
                             >
                               Edit
-                            </button>
+                            </Button>
                           )}
                         </div>
 
                         <div className="flex justify-start">
                           {currentUserRole === 'admin' && !isSelf && (
-                            <button
+                            <Button
                               disabled={isTogglingActive}
                               onClick={() => handleToggleActive(usr)}
-                              className={`focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
+                              className={cn(
+                                'h-8 w-full text-[11px] font-medium shadow-sm transition-all',
                                 usr.active
                                   ? 'border border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
                                   : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                              }`}
+                              )}
                             >
                               {isDeactivating && (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -292,7 +297,7 @@ export function UserRegistry({
                                   Activate
                                 </>
                               )}
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -353,19 +358,20 @@ export function UserRegistry({
             </div>
 
             <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 disabled={isTogglingActive}
                 onClick={() => setDeactivatingUser(null)}
-                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="h-9 px-4 text-xs font-semibold"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isTogglingActive}
                 onClick={confirmDeactivation}
-                className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 disabled:pointer-events-none disabled:opacity-50"
               >
                 {isTogglingActive ? (
                   <>
@@ -375,7 +381,7 @@ export function UserRegistry({
                 ) : (
                   'Deactivate User'
                 )}
-              </button>
+              </Button>
             </div>
           </dialog>
         </div>

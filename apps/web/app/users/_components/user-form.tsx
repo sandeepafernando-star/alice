@@ -5,6 +5,13 @@ import { Button } from '@repo/ui/components/ui/button';
 import { Input } from '@repo/ui/components/ui/input';
 import { Label } from '@repo/ui/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/ui/select';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -141,14 +148,16 @@ export function UserForm({
   return (
     <Card className="relative border border-gray-200 bg-white text-gray-900 shadow-xl transition-all duration-300 hover:shadow-2xl">
       {onClose && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className="hover:bg-muted text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer rounded-full p-1.5 transition-colors"
+          className="text-muted-foreground absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full transition-colors"
           aria-label="Close modal"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       )}
 
       <CardHeader className="space-y-1.5 pb-4">
@@ -205,20 +214,21 @@ export function UserForm({
               Workspace Role
             </Label>
             <div className="relative">
-              <select
-                id="role"
-                name="role"
-                required
+              <Select
                 value={role}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setRole(e.target.value as 'admin' | 'manager' | 'member')
+                onValueChange={(val) =>
+                  setRole(val as 'admin' | 'manager' | 'member')
                 }
-                className="bg-background/80 border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
-                <option value="member">Member</option>
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
-              </select>
+                <SelectTrigger id="role" className="bg-background/80 h-10">
+                  <SelectValue placeholder="Select role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -226,14 +236,15 @@ export function UserForm({
 
           <div className="flex gap-3 pt-2">
             {onClose && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 disabled={isSubmitting || isSuccess}
                 onClick={onClose}
-                className="border-input bg-background hover:bg-accent text-foreground flex w-1/3 cursor-pointer items-center justify-center rounded-md border text-sm font-semibold shadow-sm transition-all duration-300"
+                className="w-1/3"
               >
                 Cancel
-              </button>
+              </Button>
             )}
             <Button
               type="submit"

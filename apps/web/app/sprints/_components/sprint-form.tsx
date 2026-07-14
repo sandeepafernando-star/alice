@@ -1,6 +1,12 @@
 'use client';
 
-import { FormEvent, useEffect, useState, useMemo, type ChangeEvent } from 'react';
+import {
+  FormEvent,
+  useEffect,
+  useState,
+  useMemo,
+  type ChangeEvent,
+} from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import {
   Card,
@@ -11,6 +17,14 @@ import {
 } from '@repo/ui/components/ui/card';
 import { Input } from '@repo/ui/components/ui/input';
 import { Label } from '@repo/ui/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/ui/select';
+import { Textarea } from '@repo/ui/components/ui/textarea';
 import { cn } from '@repo/ui/lib/utils';
 import type { Tables } from '@repo/types';
 import {
@@ -73,22 +87,22 @@ function renderProjectOptions(
 ) {
   if (isLoadingProjects) {
     return (
-      <option value="" disabled>
+      <SelectItem value="loading" disabled>
         Loading projects...
-      </option>
+      </SelectItem>
     );
   }
   if (projects.length === 0) {
     return (
-      <option value="" disabled>
+      <SelectItem value="none" disabled>
         No active projects found.
-      </option>
+      </SelectItem>
     );
   }
   return projects.map((proj: Tables<'projects'>) => (
-    <option key={proj.id} value={proj.id}>
+    <SelectItem key={proj.id} value={proj.id}>
       {proj.name} ({proj.key})
-    </option>
+    </SelectItem>
   ));
 }
 
@@ -285,14 +299,16 @@ export function SprintForm({
       )}
     >
       {onClose && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className="hover:bg-muted text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer rounded-full p-1.5 transition-colors"
+          className="text-muted-foreground absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full transition-colors"
           aria-label="Close modal"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       )}
 
       <CardHeader className="space-y-1.5 pb-4">
@@ -322,18 +338,21 @@ export function SprintForm({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="sprint-project">Project</Label>
-              <select
-                id="sprint-project"
+              <Select
                 value={selectedProjectId}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setSelectedProjectId(e.target.value)
-                }
-                required
+                onValueChange={setSelectedProjectId}
                 disabled={isLoadingProjects}
-                className="bg-background/80 border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50"
               >
-                {renderProjectOptions(isLoadingProjects, displayedProjects)}
-              </select>
+                <SelectTrigger
+                  id="sprint-project"
+                  className="bg-background/80 h-10 w-full"
+                >
+                  <SelectValue placeholder="Select project..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {renderProjectOptions(isLoadingProjects, displayedProjects)}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -352,7 +371,7 @@ export function SprintForm({
 
             <div className="space-y-2">
               <Label htmlFor="sprint-goal">Goal</Label>
-              <textarea
+              <Textarea
                 id="sprint-goal"
                 name="goal"
                 value={goal}
@@ -361,9 +380,7 @@ export function SprintForm({
                 }
                 rows={3}
                 placeholder="What should this sprint achieve?"
-                className={cn(
-                  'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 w-full min-w-0 resize-y rounded-lg border bg-transparent px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm'
-                )}
+                className="bg-transparent"
               />
             </div>
 
@@ -400,14 +417,15 @@ export function SprintForm({
 
             <div className="flex gap-3 pt-2">
               {onClose && (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   disabled={isSubmitting || isSuccess}
                   onClick={onClose}
-                  className="border-input bg-background hover:bg-accent text-foreground flex w-1/3 cursor-pointer items-center justify-center rounded-md border text-sm font-semibold shadow-sm transition-all duration-300"
+                  className="w-1/3"
                 >
                   Cancel
-                </button>
+                </Button>
               )}
               <Button
                 type="submit"
