@@ -304,21 +304,19 @@ export function TeamRegistry({
 
                       // Extract action buttons to avoid nested conditional JSX (SonarQube compliance)
                       let primaryButton = <div className="w-20 shrink-0" />;
-                      if (team.status !== 'archived') {
-                        if (isManagerOrAdmin) {
-                          primaryButton = (
-                            <Button
-                              variant="outline"
-                              disabled={isPending}
-                              onClick={() => setTeamToEdit(team)}
-                              className="focus-visible:ring-ring border border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 font-semibold shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-20 justify-center shrink-0 flex items-center"
-                            >
-                              <Pencil className="mr-1 h-3 w-3 shrink-0" />
-                              <span>Edit</span>
-                            </Button>
-                          );
-                        }
-                      } else if (isManagerOrAdmin) {
+                      if (team.status !== 'archived' && isManagerOrAdmin) {
+                        primaryButton = (
+                          <Button
+                            variant="outline"
+                            disabled={isPending}
+                            onClick={() => setTeamToEdit(team)}
+                            className="focus-visible:ring-ring border border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 font-semibold shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-20 justify-center shrink-0 flex items-center"
+                          >
+                            <Pencil className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Edit</span>
+                          </Button>
+                        );
+                      } else if (team.status === 'archived' && isManagerOrAdmin) {
                         primaryButton = (
                           <Button
                             disabled={isPending}
@@ -332,20 +330,18 @@ export function TeamRegistry({
                       }
 
                       let secondaryButton = <div className="w-28 shrink-0" />;
-                      if (team.status !== 'archived') {
-                        if (isManagerOrAdmin) {
-                          secondaryButton = (
-                            <Button
-                              disabled={isPending}
-                              onClick={() => handleSoftDelete(team)}
-                              className="focus-visible:ring-ring border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-28 justify-center shrink-0 flex items-center"
-                            >
-                              <Archive className="mr-1 h-3 w-3 shrink-0" />
-                              <span>Archive</span>
-                            </Button>
-                          );
-                        }
-                      } else if (isAdmin) {
+                      if (team.status !== 'archived' && isManagerOrAdmin) {
+                        secondaryButton = (
+                          <Button
+                            disabled={isPending}
+                            onClick={() => handleSoftDelete(team)}
+                            className="focus-visible:ring-ring border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-28 justify-center shrink-0 flex items-center"
+                          >
+                            <Archive className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Archive</span>
+                          </Button>
+                        );
+                      } else if (team.status === 'archived' && isAdmin) {
                         secondaryButton = (
                           <Button
                             disabled={isPending}

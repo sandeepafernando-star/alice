@@ -462,32 +462,28 @@ function ProjectRegistryRow({
   }
 
   let secondaryButton = <div className="w-28 shrink-0" />;
-  if (tab === 'active') {
-    if (isManagerOrAdmin) {
-      secondaryButton = (
-        <Button
-          disabled={isPending}
-          onClick={() => handleSoftDelete(proj)}
-          className="focus-visible:ring-ring border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-28 justify-center shrink-0 flex items-center"
-        >
-          <Archive className="mr-1 h-3 w-3 shrink-0" />
-          <span>Archive</span>
-        </Button>
-      );
-    }
-  } else {
-    if (isAdmin) {
-      secondaryButton = (
-        <Button
-          disabled={isPending}
-          onClick={() => handleHardDelete(proj)}
-          className="h-8 border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm hover:bg-rose-600 hover:text-white disabled:opacity-50 w-28 justify-center shrink-0 flex items-center"
-        >
-          <Trash2 className="mr-1 h-3 w-3 shrink-0" />
-          <span>Purge</span>
-        </Button>
-      );
-    }
+  if (tab === 'active' && isManagerOrAdmin) {
+    secondaryButton = (
+      <Button
+        disabled={isPending}
+        onClick={() => handleSoftDelete(proj)}
+        className="focus-visible:ring-ring border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-28 justify-center shrink-0 flex items-center"
+      >
+        <Archive className="mr-1 h-3 w-3 shrink-0" />
+        <span>Archive</span>
+      </Button>
+    );
+  } else if (tab !== 'active' && isAdmin) {
+    secondaryButton = (
+      <Button
+        disabled={isPending}
+        onClick={() => handleHardDelete(proj)}
+        className="h-8 border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm hover:bg-rose-600 hover:text-white disabled:opacity-50 w-28 justify-center shrink-0 flex items-center"
+      >
+        <Trash2 className="mr-1 h-3 w-3 shrink-0" />
+        <span>Purge</span>
+      </Button>
+    );
   }
 
   return (
