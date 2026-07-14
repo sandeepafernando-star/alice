@@ -5,6 +5,13 @@ import { Button } from '@repo/ui/components/ui/button';
 import { Input } from '@repo/ui/components/ui/input';
 import { Label } from '@repo/ui/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/ui/select';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -210,14 +217,16 @@ export function ProjectForm({
   return (
     <Card className="border-border bg-card text-card-foreground relative border shadow-2xl transition-all duration-300">
       {onClose && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className="hover:bg-muted text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer rounded-full p-1.5 transition-colors"
+          className="text-muted-foreground absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full transition-colors"
           aria-label="Close modal"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       )}
 
       <CardHeader className="space-y-1.5 pb-4">
@@ -303,46 +312,48 @@ export function ProjectForm({
                 <Label htmlFor="owner_id" className="text-sm font-medium">
                   Project Owner
                 </Label>
-                <select
-                  id="owner_id"
-                  name="owner_id"
+                <Select
                   value={selectedOwnerId}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                    setSelectedOwnerId(e.target.value)
-                  }
-                  required
-                  className="bg-background/80 border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  onValueChange={setSelectedOwnerId}
+                  name="owner_id"
                 >
-                  <option value="" disabled>
-                    Select Owner...
-                  </option>
-                  {users
-                    .filter((u) => u.role === 'manager')
-                    .map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} ({u.email})
-                      </option>
-                    ))}
-                </select>
+                  <SelectTrigger
+                    id="owner_id"
+                    className="bg-background/80 h-10"
+                  >
+                    <SelectValue placeholder="Select Owner..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users
+                      .filter((u) => u.role === 'manager')
+                      .map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.name} ({u.email})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
                   Status
                 </Label>
-                <select
-                  id="status"
-                  name="status"
+                <Select
                   value={status}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                    setStatus(e.target.value as 'active' | 'archived')
+                  onValueChange={(val) =>
+                    setStatus(val as 'active' | 'archived')
                   }
-                  required
-                  className="bg-background/80 border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  name="status"
                 >
-                  <option value="active">Active</option>
-                  <option value="archived">Archived</option>
-                </select>
+                  <SelectTrigger id="status" className="bg-background/80 h-10">
+                    <SelectValue placeholder="Select status..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -385,14 +396,15 @@ export function ProjectForm({
 
             <div className="flex gap-3 pt-2">
               {onClose && (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   disabled={isSubmitting || isSuccess}
                   onClick={onClose}
-                  className="border-input bg-background hover:bg-accent text-foreground flex w-1/3 cursor-pointer items-center justify-center rounded-md border text-sm font-semibold shadow-sm transition-all duration-300"
+                  className="w-1/3"
                 >
                   Cancel
-                </button>
+                </Button>
               )}
               <Button
                 type="submit"

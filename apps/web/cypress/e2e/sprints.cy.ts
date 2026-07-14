@@ -1,33 +1,39 @@
 function createSprint(sprintName: string, goal: string) {
-    // Click "Add Sprint" button
-    cy.contains('button', 'Add Sprint').click();
+  // Click "Add Sprint" button
+  cy.contains('button', 'Add Sprint').click();
 
-    // Wait for project options to load and select the first project
-    cy.get('select#sprint-project option')
-      .should('have.length.at.least', 1)
-      .and('not.have.value', '');
+  // Wait for project options to load and select the first project
+  cy.get('select#sprint-project option')
+    .should('have.length.at.least', 1)
+    .and('not.have.value', '');
 
-    cy.get('select#sprint-project').first().then(($select) => {
+  cy.get('select#sprint-project')
+    .first()
+    .then(($select) => {
       const options = $select.find('option');
-      cy.get('select#sprint-project').first().select(options.eq(0).val() as string);
+      cy.get('select#sprint-project')
+        .first()
+        .select(options.eq(0).val() as string);
     });
 
-    cy.get('input#sprint-name').first().type(sprintName, { delay: 30 });
-    cy.get('textarea#sprint-goal').first().type(goal, { delay: 30 });
+  cy.get('input#sprint-name').first().type(sprintName, { delay: 30 });
+  cy.get('textarea#sprint-goal').first().type(goal, { delay: 30 });
 
-    // Enter start date and end date
-    // Note: inputs with type="date" expect "YYYY-MM-DD"
-    const today = new Date().toISOString().split('T')[0]!;
-    const twoWeeksLater = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!;
+  // Enter start date and end date
+  // Note: inputs with type="date" expect "YYYY-MM-DD"
+  const today = new Date().toISOString().split('T')[0]!;
+  const twoWeeksLater = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split('T')[0]!;
 
-    cy.get('input#sprint-start-date').first().type(today, { delay: 30 });
-    cy.get('input#sprint-end-date').first().type(twoWeeksLater, { delay: 30 });
+  cy.get('input#sprint-start-date').first().type(today, { delay: 30 });
+  cy.get('input#sprint-end-date').first().type(twoWeeksLater, { delay: 30 });
 
-    // Submit
-    cy.get('form').first().submit();
+  // Submit
+  cy.get('form').first().submit();
 
-    // Wait for the modal success timer to fire and unmount the modal
-    cy.get('textarea#sprint-goal').should('not.exist');
+  // Wait for the modal success timer to fire and unmount the modal
+  cy.get('textarea#sprint-goal').should('not.exist');
 }
 
 describe('Sprints Workspace', () => {
@@ -76,7 +82,9 @@ describe('Sprints Workspace', () => {
     // Edit the goal
     const updatedGoal = `${goal} - Updated`;
     cy.get('textarea#sprint-goal').first().clear();
-    cy.wrap(null).then(() => new Promise((resolve) => setTimeout(resolve, 500)));
+    cy.wrap(null).then(
+      () => new Promise((resolve) => setTimeout(resolve, 500))
+    );
     cy.get('textarea#sprint-goal').first().type(updatedGoal, { delay: 30 });
 
     // Submit the form
@@ -91,7 +99,9 @@ describe('Sprints Workspace', () => {
     // 6. Update Status
     // Inside the sprint list item, click the status button/dropdown
     cy.contains('li', sprintName).within(() => {
-      cy.get('button').contains(/Planned|Not Started|Ongoing|Completed/i).click();
+      cy.get('button')
+        .contains(/Planned|Not Started|Ongoing|Completed/i)
+        .click();
     });
 
     // Select "Ongoing" in the dropdown list
@@ -126,7 +136,9 @@ describe('Sprints Workspace', () => {
 
     // 5. Change status as non-creator
     cy.contains('li', sprintName).within(() => {
-      cy.get('button').contains(/Planned|Not Started|Ongoing|Completed/i).click();
+      cy.get('button')
+        .contains(/Planned|Not Started|Ongoing|Completed/i)
+        .click();
     });
     cy.contains('[role="menuitem"]', 'Ongoing').click();
 
@@ -143,7 +155,9 @@ describe('Sprints Workspace', () => {
     cy.get('input#sprint-name').first().should('have.value', sprintName);
     const updatedGoal = 'Goal updated by member';
     cy.get('textarea#sprint-goal').first().clear();
-    cy.wrap(null).then(() => new Promise((resolve) => setTimeout(resolve, 500)));
+    cy.wrap(null).then(
+      () => new Promise((resolve) => setTimeout(resolve, 500))
+    );
     cy.get('textarea#sprint-goal').first().type(updatedGoal, { delay: 30 });
 
     cy.get('form').first().submit();

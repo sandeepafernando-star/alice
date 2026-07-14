@@ -215,7 +215,9 @@ describe('SprintList Component', () => {
 
     // Page selector rows per page drop-down
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: '20' } });
+    fireEvent.click(select);
+    const option = screen.getByRole('option', { name: '20' });
+    fireEvent.click(option);
     expect(onLimitChange).toHaveBeenCalledWith(20);
 
     // Check pagination buttons - page numbers 1, 2, 3 should exist.

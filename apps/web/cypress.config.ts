@@ -51,14 +51,17 @@ export default defineConfig({
           const testUserEmail = process.env.CYPRESS_TEST_USER_EMAIL;
 
           if (!supabaseUrl || !serviceRoleKey || !testUserEmail) {
-            console.log('Skipping database cleanup: Supabase URL, Service Role Key, or Test User Email missing in .env.local');
+            console.log(
+              'Skipping database cleanup: Supabase URL, Service Role Key, or Test User Email missing in .env.local'
+            );
             return null;
           }
 
           const supabase = createClient(supabaseUrl, serviceRoleKey);
 
           try {
-            const { data, error: listError } = await supabase.auth.admin.listUsers();
+            const { data, error: listError } =
+              await supabase.auth.admin.listUsers();
             if (listError) {
               console.error('Error listing users:', listError);
               return null;
@@ -66,20 +69,23 @@ export default defineConfig({
 
             const hasUser = data.users.some((u) => u.email === testUserEmail);
             if (hasUser) {
-
               // Clean up Cypress-created sprints to prevent list/pagination pollution
               const { error: deleteError } = await supabase
                 .from('sprints')
                 .delete()
-                .or('name.like.Sprint E2E %,name.like.Admin Sprint %,name.like.Test %');
-              
+                .or(
+                  'name.like.Sprint E2E %,name.like.Admin Sprint %,name.like.Test %'
+                );
+
               if (deleteError) {
                 console.error('Error cleaning up test sprints:', deleteError);
               } else {
                 console.log('Successfully cleaned up old test sprints');
               }
             } else {
-              console.log(`Test user ${testUserEmail} not found in auth registry`);
+              console.log(
+                `Test user ${testUserEmail} not found in auth registry`
+              );
             }
           } catch (err) {
             console.error('Failed in resetTestUserPassword task:', err);

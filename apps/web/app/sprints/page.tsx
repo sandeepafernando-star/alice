@@ -8,7 +8,12 @@ import { PaginatedSprints } from '@/app/sprints/_services/sprints.service';
 export default async function SprintsPage({
   searchParams,
 }: Readonly<{
-  searchParams: Promise<{ page?: string; limit?: string; tab?: string; search?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    tab?: string;
+    search?: string;
+  }>;
 }>) {
   const resolvedSearchParams = await searchParams;
   const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10);

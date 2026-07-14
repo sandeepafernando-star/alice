@@ -6,6 +6,9 @@ import { useDebouncedSearch } from '@/hooks/use-debounced-search';
 import { SprintList } from '@/app/sprints/_components/sprint-list';
 import { SprintForm } from '@/app/sprints/_components/sprint-form';
 import { Sprint } from '@/app/sprints/_services/sprints.service';
+import { Button } from '@repo/ui/components/ui/button';
+import { Input } from '@repo/ui/components/ui/input';
+import { cn } from '@repo/ui/lib/utils';
 
 import { Search } from 'lucide-react';
 
@@ -87,38 +90,42 @@ export function SprintsWorkspace({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative max-w-md flex-1">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <input
+            <Input
               type="text"
               placeholder="Search sprints by name or goal..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+              className="bg-background/50 h-10 py-2 pr-4 pl-10"
             />
           </div>
 
           <div className="flex items-center gap-2">
             {/* Tabs */}
             <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => handleTabChange('active')}
-                className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+                className={cn(
+                  'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                   filterTab === 'active'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'hover:text-foreground'
-                }`}
+                    ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                )}
               >
                 Active
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => handleTabChange('archived')}
-                className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+                className={cn(
+                  'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                   filterTab === 'archived'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'hover:text-foreground'
-                }`}
+                    ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                )}
               >
                 Archived
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -133,8 +140,14 @@ export function SprintsWorkspace({
             error={error}
             onRetry={handleRetry}
             onSprintUpdated={handleSprintUpdated}
-            onAddSprint={isManagerOrAdmin ? () => setIsAddSprintOpen(true) : undefined}
-            onEditSprint={isManagerOrAdmin ? (sprint) => setEditingSprint(sprint) : undefined}
+            onAddSprint={
+              isManagerOrAdmin ? () => setIsAddSprintOpen(true) : undefined
+            }
+            onEditSprint={
+              isManagerOrAdmin
+                ? (sprint) => setEditingSprint(sprint)
+                : undefined
+            }
             isManagerOrAdmin={isManagerOrAdmin}
           />
         </div>

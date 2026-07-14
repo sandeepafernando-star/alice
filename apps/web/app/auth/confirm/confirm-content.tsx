@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
+import { Button } from '@repo/ui/components/ui/button';
 import { Loader2, AlertCircle, CheckCircle, ShieldCheck } from 'lucide-react';
 
 export default function ConfirmContent() {
@@ -87,10 +88,10 @@ export default function ConfirmContent() {
                   <span>Verification successful! Redirecting...</span>
                 </div>
               ) : (
-                <button
+                <Button
                   disabled={isPending}
                   onClick={handleVerify}
-                  className="flex h-11 w-full cursor-pointer items-center justify-center rounded-md font-semibold text-white shadow-md transition-all duration-300"
+                  className="h-11 w-full"
                 >
                   {isPending ? (
                     <>
@@ -100,7 +101,7 @@ export default function ConfirmContent() {
                   ) : (
                     'Confirm & Continue'
                   )}
-                </button>
+                </Button>
               )}
             </>
           ) : (

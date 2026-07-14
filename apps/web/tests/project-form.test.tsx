@@ -109,10 +109,13 @@ describe('ProjectForm Component', () => {
     const ownerSelect = screen.getByLabelText(/Project Owner/i);
     expect(ownerSelect).toBeInTheDocument();
 
-    const options = within(ownerSelect).getAllByRole('option');
+    const hiddenSelect = document.querySelector('select[name="owner_id"]');
+    const options = within(hiddenSelect as HTMLElement).getAllByRole('option', {
+      hidden: true,
+    });
     // Options should be: "Select Owner..." option plus 2 managers = 3 total options.
     expect(options).toHaveLength(3);
-    expect(options[0]).toHaveTextContent('Select Owner...');
+    expect(options[0]).toHaveValue('');
     expect(options[1]).toHaveTextContent('Manager One (mgr1@alice.dev)');
     expect(options[2]).toHaveTextContent('Manager Two (mgr2@alice.dev)');
   });
@@ -151,9 +154,12 @@ describe('ProjectForm Component', () => {
     fireEvent.change(screen.getByLabelText(/Description/i), {
       target: { value: 'Project description details' },
     });
-    fireEvent.change(screen.getByLabelText(/Project Owner/i), {
-      target: { value: 'user-mgr-1' },
+    const ownerSelect = screen.getByLabelText(/Project Owner/i);
+    fireEvent.click(ownerSelect);
+    const option = screen.getByRole('option', {
+      name: 'Manager One (mgr1@alice.dev)',
     });
+    fireEvent.click(option);
     fireEvent.change(screen.getByLabelText(/Start Date/i), {
       target: { value: '2026-07-10' },
     });
@@ -218,7 +224,9 @@ describe('ProjectForm Component', () => {
       expect(screen.getByLabelText(/Description/i)).toHaveValue(
         'Project description details'
       );
-      expect(screen.getByLabelText(/Project Owner/i)).toHaveValue('user-mgr-1');
+      expect(screen.getByLabelText(/Project Owner/i)).toHaveTextContent(
+        'Manager One (mgr1@alice.dev)'
+      );
       expect(screen.getByLabelText(/Start Date/i)).toHaveValue('2026-07-10');
       expect(screen.getByLabelText(/End Date/i)).toHaveValue('2026-08-10');
     });
