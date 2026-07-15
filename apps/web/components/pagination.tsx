@@ -1,7 +1,10 @@
 /* eslint-disable no-unused-vars */
 'use client';
 
+import { Button } from '@repo/ui/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui/components/ui/select';
 import { ChevronLeft, ChevronRight } from '@repo/ui/lib/icons';
+import { cn } from '@repo/ui/lib/utils';
 
 interface PaginationProps {
   readonly totalCount: number;
@@ -41,28 +44,34 @@ export function Pagination({
         {/* Page Limit Selector */}
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-xs">Rows per page:</span>
-          <select
-            value={limit}
-            onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="border-input bg-background/50 hover:bg-accent text-foreground focus-visible:ring-ring cursor-pointer rounded border px-2 py-1 text-xs font-medium focus-visible:ring-1 focus-visible:outline-none"
+          <Select
+            value={String(limit)}
+            onValueChange={(val) => onLimitChange(Number(val))}
           >
-            {[5, 10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="bg-background/50 hover:bg-accent h-7 w-17.5 text-xs font-medium">
+              <SelectValue placeholder={String(limit)} />
+            </SelectTrigger>
+            <SelectContent>
+              {[5, 10, 20, 50].map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Page Buttons */}
         <div className="flex items-center gap-1">
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
-            className="border-input bg-background/50 hover:bg-accent focus-visible:ring-ring inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border text-xs font-semibold shadow-sm transition-all focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+            className="bg-background/50 h-8 w-8 text-xs font-semibold shadow-sm transition-all"
           >
             <ChevronLeft className="h-4 w-4" />
-          </button>
+          </Button>
 
           {/* Dynamic Page Numbers */}
           {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -81,27 +90,32 @@ export function Pagination({
                       ...
                     </span>
                   )}
-                  <button
+                  <Button
+                    variant={page === p ? 'default' : 'outline'}
+                    size="icon"
                     onClick={() => onPageChange(p)}
-                    className={`focus-visible:ring-ring inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border text-xs font-semibold shadow-sm transition-all focus-visible:ring-1 focus-visible:outline-none ${
+                    className={cn(
+                      'h-8 w-8 text-xs font-semibold shadow-sm transition-all',
                       page === p
-                        ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/95'
-                        : 'border-input bg-background/50 hover:bg-accent text-foreground'
-                    }`}
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/95'
+                        : 'bg-background/50 hover:bg-accent text-foreground'
+                    )}
                   >
                     {p}
-                  </button>
+                  </Button>
                 </div>
               );
             })}
 
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
-            className="border-input bg-background/50 hover:bg-accent focus-visible:ring-ring inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded border text-xs font-semibold shadow-sm transition-all focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+            className="bg-background/50 h-8 w-8 text-xs font-semibold shadow-sm transition-all"
           >
             <ChevronRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
   DashboardBreadcrumb,
   type DashboardBreadcrumbOverride,
 } from './dashboard-breadcrumb';
+import { Button } from '@repo/ui/components/ui/button';
 
 type DashboardPageMetaProps = {
   description?: string;
@@ -27,13 +28,15 @@ export function DashboardPageMeta({
       {description ? (
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
+            <Button
               type="button"
-              className="text-muted-foreground hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground size-7 shrink-0"
               aria-label="Page description"
             >
               <Info className="size-4" />
-            </button>
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-xs">
             {description}

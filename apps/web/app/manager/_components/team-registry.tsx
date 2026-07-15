@@ -9,17 +9,31 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
+import { Button } from '@repo/ui/components/ui/button';
+import { Input } from '@repo/ui/components/ui/input';
+import { cn } from '@repo/ui/lib/utils';
 import { TeamForm } from './team-form';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@repo/ui/components/ui/table';
 import { softDeleteTeam, restoreTeam, hardDeleteTeam } from './actions';
 import {
   Users,
-  Terminal,
   Shield,
   AlertTriangle,
   Loader2,
   Plus,
   Search,
   FolderOpen,
+  Pencil,
+  RefreshCw,
+  Archive,
+  Trash2,
 } from '@repo/ui/lib/icons';
 import { Pagination } from '@/components/pagination';
 import type { Team } from '../_services/teams.service';
@@ -171,12 +185,13 @@ export function TeamRegistry({
         <div className="text-destructive bg-destructive/10 border-destructive/20 relative flex items-center gap-2 rounded-lg border p-3 text-sm">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
-          <button
+          <Button
+            variant="link"
             onClick={() => setError(null)}
-            className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+            className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 
@@ -184,61 +199,67 @@ export function TeamRegistry({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-md flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <input
+          <Input
             type="text"
             placeholder="Search teams by name, tech stack, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-background/50 h-10 py-2 pr-4 pl-10"
           />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Tabs */}
           <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => changeTabSelection('active')}
-              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none',
                 tab === 'active'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Active
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => changeTabSelection('inactive')}
-              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none',
                 tab === 'inactive'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Inactive
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => changeTabSelection('archived')}
-              className={`ring-offset-background inline-flex cursor-pointer items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none',
                 tab === 'archived'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Archived
-            </button>
+            </Button>
           </div>
 
           {isManagerOrAdmin && (
-            <button
+            <Button
               onClick={() => {
                 setTeamToEdit(null);
                 setIsAddTeamOpen(true);
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="h-10 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               Add Team
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -262,46 +283,111 @@ export function TeamRegistry({
             </div>
           ) : (
             <>
-              <div className="divide-border divide-y">
-                {teams.map((team) => {
-                  const managerName = team.manager?.name ?? 'Unknown Manager';
-                  const managerEmail = team.manager?.email ?? '';
-                  const isManagerSelf = team.manager_id === currentUserId;
-
-                  return (
-                    <div
-                      key={team.id}
-                      className="group flex flex-col justify-between gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                    >
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <div className="bg-primary/10 text-primary border-primary/20 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-sm font-bold shadow-sm transition-all duration-300 group-hover:scale-105">
-                          {team.name.slice(0, 2).toUpperCase()}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Team</TableHead>
+                      <TableHead className="w-[40%]">Manager</TableHead>
+                      <TableHead className="w-[20%] pr-4">
+                        <div className="flex justify-end">
+                          <div className="w-50 text-left">Actions</div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-foreground group-hover:text-primary flex items-center gap-2 text-sm leading-none font-semibold transition-colors">
-                            <span className="truncate">{team.name}</span>
-                            {team.status === 'archived' && (
-                              <span className="py-0.2 shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 text-[10px] font-semibold tracking-normal text-amber-600 uppercase">
-                                Archived
-                              </span>
-                            )}
-                            {team.status === 'inactive' && (
-                              <span className="py-0.2 shrink-0 rounded-full border border-slate-500/20 bg-slate-500/10 px-1.5 text-[10px] font-semibold tracking-normal text-slate-600 uppercase">
-                                Inactive
-                              </span>
-                            )}
-                          </h4>
-                          {team.description && (
-                            <p className="text-muted-foreground mt-1 truncate text-xs">
-                              {team.description}
-                            </p>
-                          )}
-                          <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                            <span className="flex min-w-0 items-center gap-1">
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {teams.map((team) => {
+                      const managerName = team.manager?.name ?? 'Unknown Manager';
+                      const managerEmail = team.manager?.email ?? '';
+                      const isManagerSelf = team.manager_id === currentUserId;
+
+                      // Extract action buttons to avoid nested conditional JSX (SonarQube compliance)
+                      let primaryButton = <div className="w-20 shrink-0" />;
+                      if (team.status !== 'archived' && isManagerOrAdmin) {
+                        primaryButton = (
+                          <Button
+                            variant="outline"
+                            disabled={isPending}
+                            onClick={() => setTeamToEdit(team)}
+                            className="focus-visible:ring-ring border border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 font-semibold shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-20 justify-center shrink-0 flex items-center"
+                          >
+                            <Pencil className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Edit</span>
+                          </Button>
+                        );
+                      } else if (team.status === 'archived' && isManagerOrAdmin) {
+                        primaryButton = (
+                          <Button
+                            disabled={isPending}
+                            onClick={() => handleRestore(team)}
+                            className="h-8 border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white disabled:opacity-50 w-20 justify-center shrink-0 flex items-center"
+                          >
+                            <RefreshCw className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Restore</span>
+                          </Button>
+                        );
+                      }
+
+                      let secondaryButton = <div className="w-28 shrink-0" />;
+                      if (team.status !== 'archived' && isManagerOrAdmin) {
+                        secondaryButton = (
+                          <Button
+                            disabled={isPending}
+                            onClick={() => handleSoftDelete(team)}
+                            className="focus-visible:ring-ring border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 h-8 w-28 justify-center shrink-0 flex items-center"
+                          >
+                            <Archive className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Archive</span>
+                          </Button>
+                        );
+                      } else if (team.status === 'archived' && isAdmin) {
+                        secondaryButton = (
+                          <Button
+                            disabled={isPending}
+                            onClick={() => handleHardDelete(team)}
+                            className="h-8 border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm hover:bg-rose-600 hover:text-white disabled:opacity-50 w-28 justify-center shrink-0 flex items-center"
+                          >
+                            <Trash2 className="mr-1 h-3 w-3 shrink-0" />
+                            <span>Purge</span>
+                          </Button>
+                        );
+                      }
+
+                      return (
+                        <TableRow key={team.id} className="hover:bg-accent/40 h-16">
+                          <TableCell className="w-[40%] font-medium">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-primary/10 text-primary border-primary/20 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-bold shadow-sm transition-all duration-300 group-hover:scale-105">
+                                {team.name.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-foreground flex items-center gap-2 text-sm font-semibold transition-colors">
+                                  <span className="truncate">{team.name}</span>
+                                  {team.status === 'archived' && (
+                                    <span className="py-0.2 shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 text-[9px] font-semibold tracking-normal text-amber-600 uppercase">
+                                      Archived
+                                    </span>
+                                  )}
+                                  {team.status === 'inactive' && (
+                                    <span className="py-0.2 shrink-0 rounded-full border border-slate-500/20 bg-slate-500/10 px-1.5 text-[9px] font-semibold tracking-normal text-slate-600 uppercase">
+                                      Inactive
+                                    </span>
+                                  )}
+                                </div>
+                                {team.description && (
+                                  <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
+                                    {team.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="w-[40%]">
+                            <span className="text-muted-foreground flex items-center gap-1 text-xs">
                               <Shield className="h-3 w-3 shrink-0" />
                               <span className="truncate">
-                                Manager:{' '}
-                                <strong className="text-foreground">
+                                <strong className="text-foreground font-semibold">
                                   {managerName}
                                 </strong>
                                 {managerEmail && ` (${managerEmail})`}
@@ -312,66 +398,18 @@ export function TeamRegistry({
                                 </span>
                               )}
                             </span>
-                            {team.tech_stack && (
-                              <span className="flex min-w-0 items-center gap-1">
-                                <Terminal className="h-3 w-3 shrink-0" />
-                                <span className="truncate">
-                                  Stack:{' '}
-                                  <strong className="text-foreground">
-                                    {team.tech_stack}
-                                  </strong>
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 pl-13 sm:grid sm:shrink-0 sm:grid-cols-[100px_100px] sm:items-center sm:gap-4 sm:pl-0">
-                        <div className="flex w-full justify-start">
-                          {team.status !== 'archived'
-                            ? isManagerOrAdmin && (
-                                <button
-                                  onClick={() => setTeamToEdit(team)}
-                                  className="border-input hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
-                                >
-                                  Edit
-                                </button>
-                              )
-                            : isManagerOrAdmin && (
-                                <button
-                                  disabled={isPending}
-                                  onClick={() => handleRestore(team)}
-                                  className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
-                                >
-                                  Restore
-                                </button>
-                              )}
-                        </div>
-
-                        <div className="flex w-full justify-start">
-                          {team.status !== 'archived'
-                            ? isManagerOrAdmin && (
-                                <button
-                                  onClick={() => handleSoftDelete(team)}
-                                  className="border-input hover:bg-destructive/10 text-destructive focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
-                                >
-                                  Archive
-                                </button>
-                              )
-                            : isAdmin && (
-                                <button
-                                  onClick={() => handleHardDelete(team)}
-                                  className="focus-visible:ring-ring border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] shadow-sm transition-all hover:text-white focus-visible:ring-2 focus-visible:outline-none"
-                                >
-                                  Delete
-                                </button>
-                              )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                          </TableCell>
+                          <TableCell className="w-[20%] text-right pr-4">
+                            <div className="flex justify-end gap-2">
+                              {primaryButton}
+                              {secondaryButton}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Pagination */}
@@ -423,38 +461,58 @@ export function TeamRegistry({
 
       {/* Delete / Archive Confirmation dialog */}
       {teamToDelete && (
-        <div className="bg-background/80 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-300">
-          <Card className="border-border bg-card text-card-foreground w-full max-w-md border shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-destructive flex items-center gap-2 text-xl font-bold">
-                <AlertTriangle className="h-5 w-5 animate-bounce" />
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+          <dialog
+            open
+            className="bg-card border-border animate-in fade-in zoom-in-95 relative block w-full max-w-md overflow-hidden rounded-xl border shadow-2xl duration-200"
+            aria-modal="true"
+          >
+            <div className="p-6">
+              <div className="mb-3 flex items-center gap-3 text-rose-500">
+                <div className="rounded-full border border-rose-500/20 bg-rose-500/10 p-2">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <h3 className="text-foreground text-lg font-bold">
+                  {deleteMode === 'soft'
+                    ? 'Archive Team'
+                    : 'Permanently Delete Team'}
+                </h3>
+              </div>
+
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Are you sure you want to
+                {deleteMode === 'soft' ? ' archive ' : ' permanently delete '}
+                <strong className="text-foreground">
+                  {teamToDelete.name}
+                </strong>
+                {' ?'}
+              </p>
+              <p className="text-muted-foreground/80 bg-muted/50 border-border/40 mt-2 rounded-lg border p-2.5 text-xs">
                 {deleteMode === 'soft'
-                  ? 'Archive Team'
-                  : 'Permanently Delete Team'}
-              </CardTitle>
-              <CardDescription className="text-muted-foreground mt-1 text-sm">
-                {deleteMode === 'soft'
-                  ? `Are you sure you want to archive "${teamToDelete.name}"? This team will be marked as archived but remains in the registry for audit tracking.`
-                  : `WARNING: This action is permanent. Are you sure you want to delete "${teamToDelete.name}"? This will permanently purge the record from the database.`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="border-border mt-4 flex justify-end gap-3 border-t pt-4">
+                  ? 'It will be hidden from the active teams list, but can be restored later from the Archived tab.'
+                  : 'Warning: This action is irreversible. This will permanently purge the record from the database.'}
+              </p>
+            </div>
+
+            <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
               <button
+                type="button"
                 disabled={isPending}
                 onClick={() => setTeamToDelete(null)}
-                className="border-input bg-background hover:bg-accent text-foreground inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-all focus-visible:outline-none disabled:opacity-50"
+                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 disabled={isPending}
                 onClick={confirmDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 inline-flex h-9 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all focus-visible:outline-none disabled:opacity-50"
+                className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
               >
                 {deleteButtonText}
               </button>
-            </CardContent>
-          </Card>
+            </div>
+          </dialog>
         </div>
       )}
     </div>
