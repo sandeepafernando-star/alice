@@ -80,6 +80,7 @@ export class WorkItemRepository {
         type: input.type,
         assignee_id: input.assignee_id,
         due_date: input.due_date,
+        description: input.description,
         updated_by: input.updatedBy,
         updated_at: new Date().toISOString(),
       })

@@ -17,7 +17,7 @@ export default async function WorkItemPage({
         { label: workItem.title, url: `/work-items/${workItem.id}` },
       ]}
     >
-      <WorkItemDetails workItem={workItem} />
+      <WorkItemDetails workItemDetails={workItem} />
     </DashboardShell>
   );
 }

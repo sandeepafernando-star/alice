@@ -104,7 +104,7 @@ export function UserForm({
         setMessage(`User details updated successfully!`);
       } else {
         const origin =
-          process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+          process.env.NEXT_PUBLIC_SITE_URL || globalThis.location.origin;
         const redirectToUrl = `${origin.replace(/\/$/, '')}/auth/callback?next=${encodeURIComponent('/reset-password')}`;
 
         await createUser({

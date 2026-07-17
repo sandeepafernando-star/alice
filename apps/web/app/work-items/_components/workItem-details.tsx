@@ -2,6 +2,7 @@
 
 import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react';
 import {
+  delay,
   formatDate,
   formatLabelWithSpace,
   getInitials,
@@ -59,6 +60,8 @@ import {
   extractWorkItemDescriptionText,
   toTiptapContent,
 } from '@/app/work-items/_helpers/work-item-description';
+import { Json } from '@repo/types';
+import { updateWorkItem } from '@/app/work-items/_services/workItem.client.service';
 
 const statuses = [
   'Draft',
@@ -423,8 +426,9 @@ const WorkItemSidebar = ({
 };
 
 export default function WorkItemDetails({
-  workItem,
-}: Readonly<{ workItem: DbWorkItem }>) {
+  workItemDetails,
+}: Readonly<{ workItemDetails: DbWorkItem }>) {
+  const [workItem, setWorkItem] = useState<DbWorkItem>(workItemDetails);
   const [isEditing, setEditing] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
@@ -440,6 +444,17 @@ export default function WorkItemDetails({
   );
 
   const childDonePercent = 0;
+
+  const handleDescriptionUpdate = async (content: Json) => {
+    const formData = new FormData();
+    formData.set('description', JSON.stringify(content));
+
+    await updateWorkItem(workItem.id, formData);
+    await delay();
+
+    setWorkItem((prev) => ({ ...prev, description: content }));
+    setEditing(false);
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -496,10 +511,7 @@ export default function WorkItemDetails({
               <WorkItemDescriptionEditor
                 id={WorkItemDescriptionEditor.name}
                 initialContent={descriptionContent}
-                onSave={(content) => {
-                  console.log(content);
-                  setEditing(false);
-                }}
+                onSave={handleDescriptionUpdate}
                 onCancel={() => setEditing(false)}
               />
             ) : (

@@ -5,7 +5,10 @@ import {
   type AuthenticatedRequest,
 } from '../../../middlewares/auth';
 import { workItemService } from './workItems.service';
-import { createUpdateWorkItemBodySchema } from './workItems.schemas';
+import {
+  createUpdateWorkItemBodySchema,
+  patchUpdateWorkItemBodySchema,
+} from './workItems.schemas';
 
 const workItemsRouter: Router = Router();
 
@@ -76,18 +79,54 @@ workItemsRouter.patch(
   requireApiAuth,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const parsed = createUpdateWorkItemBodySchema.safeParse(req.body);
+      const parsed = patchUpdateWorkItemBodySchema.safeParse(req.body);
       if (!parsed.success) {
         return res
           .status(400)
           .json({ data: null, error: z.treeifyError(parsed.error) });
       }
 
+      const existingWorkItem = await workItemService.getWorkItem(
+        req.params.id!
+      );
+      if (!existingWorkItem) {
+        return res
+          .status(404)
+          .json({ data: null, error: 'Work-item not found' });
+      }
+
+      const title = parsed.data.title ?? existingWorkItem.title;
+      const project_id = parsed.data.project_id ?? existingWorkItem.project_id;
+      const type = parsed.data.type ?? existingWorkItem.type;
+      const assignee_id =
+        parsed.data.assignee_id !== undefined
+          ? parsed.data.assignee_id
+          : existingWorkItem.assignee_id;
+      const due_date =
+        parsed.data.due_date !== undefined
+          ? parsed.data.due_date
+          : existingWorkItem.due_date;
+      const description = (
+        parsed.data.description !== undefined
+          ? parsed.data.description
+          : existingWorkItem.description
+      ) as string | null;
+
+      const payload = {
+        title,
+        project_id,
+        type,
+        assignee_id,
+        due_date,
+        description,
+      };
+
       const workItem = await workItemService.updateWorkItem(
         req.userId!,
         req.params.id!,
-        parsed.data
+        payload
       );
+
       res.status(200).json({ data: workItem, error: null });
     } catch (error) {
       const message =

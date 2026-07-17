@@ -16,21 +16,46 @@ function todayDateString(): string {
   return `${year}-${month}-${day}`;
 }
 
-export const createUpdateWorkItemBodySchema = z
-  .object({
-    title: z
-      .string()
-      .trim()
-      .min(1, 'Title is required')
-      .max(200, 'Title must be at most 200 characters'),
-    project_id: z.uuid({ message: 'Please select a valid project' }),
-    type: workItemTypeSchema,
-    assignee_id: z.uuid({ message: 'Please select a valid assignee' }),
-    due_date: dateStringSchema,
-  })
-  .refine((data) => data.due_date >= todayDateString(), {
+export const workItemCoreObject = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Title is required')
+    .max(200, 'Title must be at most 200 characters'),
+  project_id: z.uuid({ message: 'Please select a valid project' }),
+  type: workItemTypeSchema,
+  assignee_id: z.uuid({ message: 'Please select a valid assignee' }).nullable(),
+  due_date: dateStringSchema.nullable(),
+  description: z.string().nullable(),
+});
+
+export const createUpdateWorkItemBodySchema = workItemCoreObject.refine(
+  (data) => {
+    if (data.due_date) return data.due_date >= todayDateString();
+    return true;
+  },
+  {
     message: 'Due date must be on or after today',
     path: ['due_date'],
-  });
+  }
+);
+
+export const patchUpdateWorkItemBodySchema = workItemCoreObject
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided for update',
+  })
+  .refine(
+    (data) => {
+      if (data.due_date) {
+        return data.due_date >= todayDateString();
+      }
+      return true;
+    },
+    {
+      message: 'Due date must be on or after today',
+      path: ['due_date'],
+    }
+  );
 
 export type WorkItemBody = z.infer<typeof createUpdateWorkItemBodySchema>;
