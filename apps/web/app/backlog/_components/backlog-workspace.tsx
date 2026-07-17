@@ -66,7 +66,6 @@ interface BacklogWorkspaceProps {
   error?: string | null;
 }
 
-
 const mapPriority = (p: string): 'low' | 'medium' | 'high' => {
   if (p === 'highest') return 'high';
   if (p === 'lowest') return 'low';
