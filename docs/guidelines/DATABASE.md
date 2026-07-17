@@ -51,14 +51,14 @@ Prisma creates objects as `postgres`. The Supabase Data API (`anon`, `authentica
 
 Idempotent dev sample data in `packages/db/src/seed.ts`:
 
-| Entity     | Sample                                                                                         |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| Users      | `admin@alice.dev`, `manager@alice.dev`, `member@alice.dev` (+ matching Supabase Auth accounts) |
-| Project    | `ALICE` — Alice Platform                                                                       |
-| Team       | Platform Team (manager + member)                                                               |
-| Sprints    | Sprint 1 (active), Sprint 2 (planned)                                                          |
+| Entity     | Sample                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Users      | `admin@alice.dev`, `manager@alice.dev`, `member@alice.dev` (+ matching Supabase Auth accounts)                            |
+| Project    | `ALICE` — Alice Platform                                                                                                  |
+| Team       | Platform Team (manager + member)                                                                                          |
+| Sprints    | Sprint 1 (active), Sprint 2 (planned)                                                                                     |
 | Work items | Epic → Story → Task in sprint; one backlog story — each with TipTap JSON descriptions (headings, lists, bold/italic/code) |
-| Other      | Comments (threaded), attachment, notifications                                                 |
+| Other      | Comments (threaded), attachment, notifications                                                                            |
 
 Re-running seed refreshes work item descriptions on existing seed titles. Format: [`WORK_ITEM_DESCRIPTION.md`](../database/WORK_ITEM_DESCRIPTION.md).
 

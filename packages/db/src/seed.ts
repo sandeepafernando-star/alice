@@ -1,6 +1,10 @@
 import 'dotenv/config';
 
-import { auditCreate, auditCreateWithoutStatus, auditUpdate } from '@repo/types/audit';
+import {
+  auditCreate,
+  auditCreateWithoutStatus,
+  auditUpdate,
+} from '@repo/types/audit';
 import { createClient } from '@supabase/supabase-js';
 
 import { env } from './env.js';
@@ -121,20 +125,29 @@ const SEED_WORK_ITEM_DESCRIPTIONS = {
     tiptapParagraph(tiptapText('Acceptance criteria', [{ type: 'bold' }])),
     tiptapBulletList(
       [tiptapText('Admins can search users by name or email')],
-      [tiptapText('Role changes persist to '), tiptapText('public.users', [{ type: 'code' }])],
+      [
+        tiptapText('Role changes persist to '),
+        tiptapText('public.users', [{ type: 'code' }]),
+      ],
       [tiptapText('Inactive users cannot access protected routes')]
     )
   ),
   task: tiptapDoc(
     tiptapHeading(2, tiptapText('Wire user list to Supabase')),
     tiptapParagraph(
-      tiptapText('Connect the registry table to the API using server-prefetched data and typed DTOs from '),
+      tiptapText(
+        'Connect the registry table to the API using server-prefetched data and typed DTOs from '
+      ),
       tiptapText('@repo/types', [{ type: 'code' }]),
       tiptapText('.')
     ),
     tiptapParagraph(tiptapText('Implementation notes', [{ type: 'bold' }])),
     tiptapBulletList(
-      [tiptapText('Use service-role only in server actions, never in client components')],
+      [
+        tiptapText(
+          'Use service-role only in server actions, never in client components'
+        ),
+      ],
       [tiptapText('Map API errors to actionable toast messages')],
       [tiptapText('Keep pagination ready even if MVP loads all rows')]
     )
@@ -148,12 +161,17 @@ const SEED_WORK_ITEM_DESCRIPTIONS = {
     ),
     tiptapParagraph(tiptapText('Desired UX', [{ type: 'bold' }])),
     tiptapBulletList(
-      [tiptapText('Columns driven by project '), tiptapText('workflow_config', [{ type: 'code' }])],
+      [
+        tiptapText('Columns driven by project '),
+        tiptapText('workflow_config', [{ type: 'code' }]),
+      ],
       [tiptapText('Cards show assignee, priority, and due date')],
       [tiptapText('Optimistic updates with rollback on API failure')]
     ),
     tiptapParagraph(
-      tiptapText('Depends on workflow configuration being stored per project in JSON.')
+      tiptapText(
+        'Depends on workflow configuration being stored per project in JSON.'
+      )
     )
   ),
 } as const;

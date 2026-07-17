@@ -1,9 +1,6 @@
 import { getDbUser } from '../../lib/auth';
 import { DashboardShell } from '@/app/dashboard/_components/dashboard-shell';
-import {
-  parseStandardParams,
-  type RawSearchParams,
-} from '@/lib/search-params';
+import { parseStandardParams, type RawSearchParams } from '@/lib/search-params';
 import { UserRegistry } from '@/app/users/_components/user-registry';
 import {
   getUsersListPaginated,

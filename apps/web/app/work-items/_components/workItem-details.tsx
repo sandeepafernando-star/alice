@@ -55,7 +55,10 @@ import {
   Settings,
 } from '@repo/ui/lib/icons';
 import WorkItemDescriptionEditor from '@/app/work-items/_components/workItem-description-editor';
-import { extractWorkItemDescriptionText, toTiptapContent } from '@/app/work-items/_helpers/work-item-description';
+import {
+  extractWorkItemDescriptionText,
+  toTiptapContent,
+} from '@/app/work-items/_helpers/work-item-description';
 
 const statuses = [
   'Draft',

@@ -51,7 +51,7 @@ function ProjectMembersList({
 }: Readonly<ProjectMembersListProps>) {
   if (isLoadingMembers) {
     return (
-      <div className="text-muted-foreground flex items-center gap-2 text-xs py-1">
+      <div className="text-muted-foreground flex items-center gap-2 py-1 text-xs">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Loading project members...
       </div>
@@ -67,7 +67,7 @@ function ProjectMembersList({
   }
 
   return (
-    <div className="bg-background/50 border-input max-h-48 overflow-y-auto custom-scrollbar rounded-md border p-2 space-y-1">
+    <div className="bg-background/50 border-input custom-scrollbar max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
       {projectMembers.map((m) => {
         const isChecked = selectedMemberIds.includes(m.user_id);
         const checkboxId = `member-checkbox-${m.user_id}`;
@@ -89,16 +89,16 @@ function ProjectMembersList({
                   );
                 }
               }}
-              className="accent-primary h-4 w-4 rounded cursor-pointer"
+              className="accent-primary h-4 w-4 cursor-pointer rounded"
             />
             <label
               htmlFor={checkboxId}
-              className="flex flex-col cursor-pointer flex-1"
+              className="flex flex-1 cursor-pointer flex-col"
             >
-              <span className="text-xs font-semibold text-foreground">
+              <span className="text-foreground text-xs font-semibold">
                 {m.user?.name}
               </span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-muted-foreground text-[10px]">
                 {m.user?.email} • {m.user?.role}
               </span>
             </label>
@@ -122,7 +122,9 @@ async function findBestProjectForTeamMembers(
     try {
       const projMembers = await getProjectMembers(proj.id);
       const projMemberIds = new Set(projMembers.map((pm) => pm.user_id));
-      const overlap = currentMemberIds.filter((id: string) => projMemberIds.has(id)).length;
+      const overlap = currentMemberIds.filter((id: string) =>
+        projMemberIds.has(id)
+      ).length;
       if (overlap > maxOverlap) {
         maxOverlap = overlap;
         bestProjectId = proj.id;
@@ -195,7 +197,9 @@ export function TeamForm({
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [projectMembers, setProjectMembers] = useState<ProjectMemberWithUser[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMemberWithUser[]>(
+    []
+  );
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
@@ -209,10 +213,15 @@ export function TeamForm({
         setProjects(activeProjects);
 
         if (editActionActive && teamToEdit?.members) {
-          const currentMemberIds = teamToEdit.members.map((m: { user_id: string }) => m.user_id);
+          const currentMemberIds = teamToEdit.members.map(
+            (m: { user_id: string }) => m.user_id
+          );
           setSelectedMemberIds(currentMemberIds);
 
-          const bestProjectId = await findBestProjectForTeamMembers(currentMemberIds, activeProjects);
+          const bestProjectId = await findBestProjectForTeamMembers(
+            currentMemberIds,
+            activeProjects
+          );
           if (bestProjectId) {
             setSelectedProjectId(bestProjectId);
           }
@@ -233,7 +242,9 @@ export function TeamForm({
         setIsLoadingMembers(true);
         try {
           const membersList = await getProjectMembers(selectedProjectId);
-          setProjectMembers(membersList.filter((m) => m.status === 'active' && m.user));
+          setProjectMembers(
+            membersList.filter((m) => m.status === 'active' && m.user)
+          );
         } catch (err) {
           console.error('Failed to fetch project members:', err);
         } finally {
@@ -312,8 +323,10 @@ export function TeamForm({
   }
 
   return (
-    <Card className="border-border bg-card text-card-foreground relative border shadow-2xl transition-all duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
-      <style dangerouslySetInnerHTML={{ __html: `
+    <Card className="border-border bg-card text-card-foreground custom-scrollbar relative max-h-[90vh] overflow-y-auto border shadow-2xl transition-all duration-300">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .custom-scrollbar {
           scrollbar-width: thin !important;
           scrollbar-color: rgba(156, 163, 175, 0.3) transparent !important;
@@ -332,7 +345,9 @@ export function TeamForm({
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background-color: rgba(156, 163, 175, 0.6) !important;
         }
-      `}} />
+      `,
+        }}
+      />
       {onClose && (
         <Button
           type="button"
@@ -406,7 +421,10 @@ export function TeamForm({
                   setStatus(val as 'active' | 'inactive' | 'archived')
                 }
               >
-                <SelectTrigger id="status" className="bg-background/80 h-10 w-full">
+                <SelectTrigger
+                  id="status"
+                  className="bg-background/80 h-10 w-full"
+                >
                   <SelectValue placeholder="Select status..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -440,7 +458,10 @@ export function TeamForm({
                 Designated Team Manager
               </Label>
               <Select value={managerId} onValueChange={setManagerId}>
-                <SelectTrigger id="manager_id" className="bg-background/80 h-10 w-full">
+                <SelectTrigger
+                  id="manager_id"
+                  className="bg-background/80 h-10 w-full"
+                >
                   <SelectValue placeholder="Select Manager..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -471,7 +492,9 @@ export function TeamForm({
                 className="bg-background/80 border-input text-foreground focus-visible:ring-primary focus:border-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 <option value="">
-                  {isLoadingProjects ? 'Loading projects...' : 'Select Project...'}
+                  {isLoadingProjects
+                    ? 'Loading projects...'
+                    : 'Select Project...'}
                 </option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>

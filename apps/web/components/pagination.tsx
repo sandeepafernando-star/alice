@@ -2,7 +2,13 @@
 'use client';
 
 import { Button } from '@repo/ui/components/ui/button';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@repo/ui/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@repo/ui/components/ui/select';
 import { ChevronLeft, ChevronRight } from '@repo/ui/lib/icons';
 import { cn } from '@repo/ui/lib/utils';
 

@@ -58,7 +58,10 @@ export function toTiptapContent(description: Json | null): JSONContent | null {
     return description as unknown as JSONContent;
   }
 
-  if (description.type === 'paragraph' && typeof description.text === 'string') {
+  if (
+    description.type === 'paragraph' &&
+    typeof description.text === 'string'
+  ) {
     return legacyParagraphToDoc(description as TiptapNode);
   }
 

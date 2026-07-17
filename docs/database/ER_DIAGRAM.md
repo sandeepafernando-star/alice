@@ -2,12 +2,12 @@
 
 ## Document metadata
 
-| Field        | Value                                                              |
-| ------------ | ------------------------------------------------------------------ |
-| Project      | Alice (1BT Project Management System / Jira Teams)                 |
-| Source       | `1BT-JIRA Task Breakdown with Team Assignments.xlsx` (MVP 1–4)     |
+| Field        | Value                                                                     |
+| ------------ | ------------------------------------------------------------------------- |
+| Project      | Alice (1BT Project Management System / Jira Teams)                        |
+| Source       | `1BT-JIRA Task Breakdown with Team Assignments.xlsx` (MVP 1–4)            |
 | Status       | Implemented — `init_jira_domain` + audit migrations + project JSON config |
-| Last updated | 2026-07-16                                                                  |
+| Last updated | 2026-07-16                                                                |
 
 Related:
 
@@ -21,17 +21,17 @@ Related:
 
 ## Design assumptions
 
-| Topic               | Decision                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| Identity            | Supabase `auth.users` for sign-in; `public.users` for app profile and RBAC                 |
-| Roles               | `admin`, `manager`, `member` on `users.role` (S-09 seeds roles)                            |
-| Backlog             | Not a separate table — `work_items` where `sprint_id IS NULL` (BL-01)                      |
-| Sprint assignment   | `work_items.sprint_id`; assign/unassign via backlog and sprint APIs (BL-04, BL-05, SPR-03) |
-| Work item hierarchy | Self-referential `parent_id` for Epic → Story → Task (WI-07)                               |
-| Rich text           | `work_items.description` stored as TipTap/ProseMirror JSON (see `WORK_ITEM_DESCRIPTION.md`) |
+| Topic               | Decision                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| Identity            | Supabase `auth.users` for sign-in; `public.users` for app profile and RBAC                               |
+| Roles               | `admin`, `manager`, `member` on `users.role` (S-09 seeds roles)                                          |
+| Backlog             | Not a separate table — `work_items` where `sprint_id IS NULL` (BL-01)                                    |
+| Sprint assignment   | `work_items.sprint_id`; assign/unassign via backlog and sprint APIs (BL-04, BL-05, SPR-03)               |
+| Work item hierarchy | Self-referential `parent_id` for Epic → Story → Task (WI-07)                                             |
+| Rich text           | `work_items.description` stored as TipTap/ProseMirror JSON (see `WORK_ITEM_DESCRIPTION.md`)              |
 | Project config      | `projects.attributes_config` and `projects.workflow_config` JSON — per-project task fields and swimlanes |
-| Soft delete         | `projects.deleted_at` for soft delete; hard delete is Admin-only (PROJ-04)                 |
-| Audit metadata      | All tables: `created_by`, `created_at`, `updated_by`, `updated_at`; see below              |
+| Soft delete         | `projects.deleted_at` for soft delete; hard delete is Admin-only (PROJ-04)                               |
+| Audit metadata      | All tables: `created_by`, `created_at`, `updated_by`, `updated_at`; see below                            |
 
 ---
 
@@ -252,12 +252,12 @@ users ──1:N──► notifications
 
 ## Implementation status
 
-| Entity        | In `schema.prisma` today                        |
-| ------------- | ----------------------------------------------- |
-| `instruments` | Yes — dev baseline with full audit columns      |
-| `users`       | Yes — `init_jira_domain` + audit migrations     |
+| Entity        | In `schema.prisma` today                                   |
+| ------------- | ---------------------------------------------------------- |
+| `instruments` | Yes — dev baseline with full audit columns                 |
+| `users`       | Yes — `init_jira_domain` + audit migrations                |
 | `projects`    | Yes — includes `attributes_config`, `workflow_config` JSON |
-| `teams`, etc. | Yes — `init_jira_domain` + audit migrations     |
+| `teams`, etc. | Yes — `init_jira_domain` + audit migrations                |
 
 When implementing, add tables via `packages/db/prisma/schema.prisma` and `pnpm db create:migrate:win <name>`. Each migration appends Supabase grants automatically (see `docs/guidelines/DATABASE.md`).
 

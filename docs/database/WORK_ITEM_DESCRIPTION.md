@@ -31,25 +31,25 @@ Text never lives directly on block nodes. Inline content is nested under `conten
 
 Supported blocks in the current editor (`StarterKit`):
 
-| Node type      | Purpose                          |
-| -------------- | -------------------------------- |
-| `paragraph`    | Body copy                        |
-| `heading`      | Section titles (`attrs.level`)   |
-| `bulletList`   | Unordered lists                  |
-| `orderedList`  | Numbered lists                   |
-| `listItem`     | List row wrapper                 |
-| `blockquote`   | Quoted text                      |
-| `codeBlock`    | Multi-line code                  |
-| `hardBreak`    | Line break inside a paragraph    |
+| Node type     | Purpose                        |
+| ------------- | ------------------------------ |
+| `paragraph`   | Body copy                      |
+| `heading`     | Section titles (`attrs.level`) |
+| `bulletList`  | Unordered lists                |
+| `orderedList` | Numbered lists                 |
+| `listItem`    | List row wrapper               |
+| `blockquote`  | Quoted text                    |
+| `codeBlock`   | Multi-line code                |
+| `hardBreak`   | Line break inside a paragraph  |
 
 Common marks:
 
-| Mark     | Purpose        |
-| -------- | -------------- |
+| Mark     | Purpose         |
+| -------- | --------------- |
 | `bold`   | Strong emphasis |
-| `italic` | Emphasis       |
-| `code`   | Inline code    |
-| `strike` | Strikethrough  |
+| `italic` | Emphasis        |
+| `code`   | Inline code     |
+| `strike` | Strikethrough   |
 
 ---
 
@@ -75,7 +75,13 @@ Common marks:
     },
     {
       "type": "paragraph",
-      "content": [{ "type": "text", "text": "Acceptance criteria", "marks": [{ "type": "bold" }] }]
+      "content": [
+        {
+          "type": "text",
+          "text": "Acceptance criteria",
+          "marks": [{ "type": "bold" }]
+        }
+      ]
     },
     {
       "type": "bulletList",
@@ -85,7 +91,12 @@ Common marks:
           "content": [
             {
               "type": "paragraph",
-              "content": [{ "type": "text", "text": "Admins can search users by name or email" }]
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Admins can search users by name or email"
+                }
+              ]
             }
           ]
         }
@@ -99,13 +110,13 @@ Common marks:
 
 ## App conventions
 
-| Concern        | Convention                                                                 |
-| -------------- | -------------------------------------------------------------------------- |
-| Read (view)    | `extractWorkItemDescriptionText()` flattens the document to plain text     |
-| Edit           | `toTiptapContent()` converts Supabase `Json` → TipTap `JSONContent`        |
-| Save           | `fromTiptapContent()` converts `JSONContent` → `Json` for persistence       |
-| Validation     | App-layer Zod/schema checks before write; DB stores JSONB as-is            |
-| Legacy seeds   | Flat `{ type: "paragraph", text: "..." }` still renders via fallback parser |
+| Concern      | Convention                                                                  |
+| ------------ | --------------------------------------------------------------------------- |
+| Read (view)  | `extractWorkItemDescriptionText()` flattens the document to plain text      |
+| Edit         | `toTiptapContent()` converts Supabase `Json` → TipTap `JSONContent`         |
+| Save         | `fromTiptapContent()` converts `JSONContent` → `Json` for persistence       |
+| Validation   | App-layer Zod/schema checks before write; DB stores JSONB as-is             |
+| Legacy seeds | Flat `{ type: "paragraph", text: "..." }` still renders via fallback parser |
 
 ---
 
@@ -115,12 +126,12 @@ Common marks:
 
 Sample items:
 
-| Title                         | Format highlights                          |
-| ----------------------------- | ------------------------------------------ |
-| User Management Epic          | Heading, scope list, italic out-of-scope   |
-| Admin user registry screen    | Acceptance criteria with inline code       |
-| Wire user list to Supabase    | Technical notes + implementation bullets   |
-| Kanban drag-and-drop board    | References `workflow_config` in copy       |
+| Title                      | Format highlights                        |
+| -------------------------- | ---------------------------------------- |
+| User Management Epic       | Heading, scope list, italic out-of-scope |
+| Admin user registry screen | Acceptance criteria with inline code     |
+| Wire user list to Supabase | Technical notes + implementation bullets |
+| Kanban drag-and-drop board | References `workflow_config` in copy     |
 
 ---
 
@@ -128,9 +139,9 @@ Sample items:
 
 Per-project task customization and swimlanes are **not** stored on `work_items.description`. They live on the project row:
 
-| Column              | Purpose                                              |
-| ------------------- | ---------------------------------------------------- |
-| `attributes_config` | Opinionated custom fields schema per work item type  |
-| `workflow_config`   | Swimlane / status progression rules for the project  |
+| Column              | Purpose                                             |
+| ------------------- | --------------------------------------------------- |
+| `attributes_config` | Opinionated custom fields schema per work item type |
+| `workflow_config`   | Swimlane / status progression rules for the project |
 
 See [`ER_DIAGRAM.md`](./ER_DIAGRAM.md) for the updated project model.
