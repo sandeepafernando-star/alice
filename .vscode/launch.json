@@ -10,52 +10,6 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "Web: Next.js (server)",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/apps/web",
-      "program": "${workspaceFolder}/apps/web/node_modules/next/dist/bin/next",
-      "args": ["dev"],
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Web: Next.js (client)",
-      "type": "chrome",
-      "request": "launch",
-      "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/apps/web"
-    },
-    {
-      "name": "Web: Next.js (full stack)",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/apps/web",
-      "program": "${workspaceFolder}/apps/web/node_modules/next/dist/bin/next",
-      "args": ["dev"],
-      "console": "integratedTerminal",
-      "serverReadyAction": {
-        "pattern": "Local: .*(https?://\\S+)",
-        "uriFormat": "%s",
-        "action": "debugWithChrome"
-      }
-    },
-    {
-      "name": "API: Express",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/apps/api",
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
-      "args": ["src/index.ts"],
-      "envFile": "${workspaceFolder}/apps/api/.env",
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "API: attach",
-      "type": "node",
-      "request": "attach",
-      "port": 9229
-    },
-    {
       "name": "DB: seed",
       "type": "node",
       "request": "launch",
@@ -92,12 +46,33 @@
       "program": "${workspaceFolder}/packages/ui/node_modules/vitest/vitest.mjs",
       "args": ["run", "${file}"],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Next.js: Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}/apps/web"
+    },
+    {
+      "name": "Next.js: Client",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Express: Backend",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}/apps/api"
     }
   ],
   "compounds": [
     {
       "name": "Full stack: Web + API",
-      "configurations": ["Web: Next.js (server)", "API: Express"]
+      "configurations": ["Next.js: Server", "Express: Backend"]
     }
   ]
 }

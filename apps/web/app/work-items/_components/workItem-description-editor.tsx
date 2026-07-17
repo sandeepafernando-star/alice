@@ -3,13 +3,13 @@
 import { Button } from '@repo/ui/components/ui/button';
 import { Bold, Italic, List } from '@repo/ui/lib/icons';
 import { cn } from '@repo/ui/lib/utils';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, JSONContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 type WorkItemDescriptionEditorProps = {
-  initialContent: string;
+  initialContent: JSONContent | null;
   // eslint-disable-next-line no-unused-vars
-  onSave: (content: string) => void;
+  onSave: (content: JSONContent) => void;
   onCancel: () => void;
 };
 
@@ -21,7 +21,7 @@ export default function WorkItemDescriptionEditor({
   const editor = useEditor({
     immediatelyRender: true,
     extensions: [StarterKit],
-    content: initialContent,
+    content: initialContent ?? '',
     editable: true,
     autofocus: 'end',
     editorProps: {
@@ -81,7 +81,7 @@ export default function WorkItemDescriptionEditor({
         <Button
           className="cursor-pointer"
           size="sm"
-          onClick={() => onSave(editor.getHTML())}
+          onClick={() => onSave(editor.getJSON())}
         >
           Save
         </Button>

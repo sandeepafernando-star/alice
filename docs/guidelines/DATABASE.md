@@ -1,6 +1,6 @@
 # Database workflow
 
-See also: [`docs/database/ER_DIAGRAM.md`](../database/ER_DIAGRAM.md) — entity model from the 1BT-JIRA task breakdown. [`docs/database/AUDIT_COLUMNS.md`](../database/AUDIT_COLUMNS.md) — audit metadata conventions and helpers.
+See also: [`docs/database/ER_DIAGRAM.md`](../database/ER_DIAGRAM.md) — entity model from the 1BT-JIRA task breakdown. [`docs/database/AUDIT_COLUMNS.md`](../database/AUDIT_COLUMNS.md) — audit metadata conventions and helpers. [`docs/database/WORK_ITEM_DESCRIPTION.md`](../database/WORK_ITEM_DESCRIPTION.md) — TipTap JSON for `work_items.description`.
 
 ## Packages
 
@@ -57,8 +57,10 @@ Idempotent dev sample data in `packages/db/src/seed.ts`:
 | Project    | `ALICE` — Alice Platform                                                                       |
 | Team       | Platform Team (manager + member)                                                               |
 | Sprints    | Sprint 1 (active), Sprint 2 (planned)                                                          |
-| Work items | Epic → Story → Task in sprint; one backlog story                                               |
+| Work items | Epic → Story → Task in sprint; one backlog story — each with TipTap JSON descriptions (headings, lists, bold/italic/code) |
 | Other      | Comments (threaded), attachment, notifications                                                 |
+
+Re-running seed refreshes work item descriptions on existing seed titles. Format: [`WORK_ITEM_DESCRIPTION.md`](../database/WORK_ITEM_DESCRIPTION.md).
 
 Dev password: set `SEED_USER_PASSWORD` in `packages/db/.env` (see `sample.env`).
 

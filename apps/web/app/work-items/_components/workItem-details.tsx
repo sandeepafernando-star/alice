@@ -1,7 +1,6 @@
 'use client';
 
 import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react';
-import type { Json } from '@repo/types';
 import {
   formatDate,
   formatLabelWithSpace,
@@ -56,6 +55,7 @@ import {
   Settings,
 } from '@repo/ui/lib/icons';
 import WorkItemDescriptionEditor from '@/app/work-items/_components/workItem-description-editor';
+import { extractWorkItemDescriptionText, toTiptapContent } from '@/app/work-items/_helpers/work-item-description';
 
 const statuses = [
   'Draft',
@@ -123,43 +123,6 @@ const PLACEHOLDER_CHILD_ISSUES = [
     status: 'New' as const,
   },
 ] as const;
-
-function extractDescriptionText(description: Json | null): string {
-  if (!description) {
-    return 'No description provided.';
-  }
-
-  if (typeof description === 'string') {
-    return description;
-  }
-
-  if (typeof description !== 'object' || Array.isArray(description)) {
-    return 'No description provided.';
-  }
-
-  const content = description.content;
-  if (!Array.isArray(content)) {
-    return 'No description provided.';
-  }
-
-  const paragraphs = content
-    .map((block) => {
-      if (
-        typeof block === 'object' &&
-        block !== null &&
-        !Array.isArray(block) &&
-        typeof block.text === 'string'
-      ) {
-        return block.text;
-      }
-      return null;
-    })
-    .filter((text): text is string => Boolean(text));
-
-  return paragraphs.length > 0
-    ? paragraphs.join('\n\n')
-    : 'No description provided.';
-}
 
 function UserPill({
   name,
@@ -464,7 +427,12 @@ export default function WorkItemDetails({
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
 
   const description = useMemo(
-    () => extractDescriptionText(workItem.description),
+    () => extractWorkItemDescriptionText(workItem.description),
+    [workItem.description]
+  );
+
+  const descriptionContent = useMemo(
+    () => toTiptapContent(workItem.description),
     [workItem.description]
   );
 
@@ -523,11 +491,7 @@ export default function WorkItemDetails({
             </div>
             {isEditing ? (
               <WorkItemDescriptionEditor
-                initialContent={
-                  workItem.description
-                    ? JSON.stringify(workItem.description)
-                    : ''
-                }
+                initialContent={descriptionContent}
                 onSave={(content) => {
                   console.log(content);
                   setEditing(false);
