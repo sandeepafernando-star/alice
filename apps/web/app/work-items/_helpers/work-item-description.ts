@@ -78,7 +78,6 @@ function nodeToPlainText(node: TiptapNode): string {
     return node.text;
   }
 
-  // Legacy flat paragraph shape from early seeds.
   if (node.type === 'paragraph' && typeof node.text === 'string') {
     return node.text;
   }

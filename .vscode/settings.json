@@ -3,6 +3,9 @@
   "debug.javascript.terminalOptions": {
     "cwd": "${workspaceFolder}"
   },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
   "js/ts.preferences.importModuleSpecifier": "non-relative",
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "sonarlint.connectedMode.project": {

@@ -99,6 +99,14 @@ function SidebarProvider({
         (event.metaKey || event.ctrlKey)
       ) {
         event.preventDefault();
+        const target = event.target as HTMLElement;
+        if (
+          target.isContentEditable ||
+          ['INPUT', 'TEXTAREA'].includes(target.tagName)
+        ) {
+          return;
+        }
+
         toggleSidebar();
       }
     };

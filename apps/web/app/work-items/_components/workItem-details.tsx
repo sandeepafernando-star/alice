@@ -494,6 +494,7 @@ export default function WorkItemDetails({
             </div>
             {isEditing ? (
               <WorkItemDescriptionEditor
+                id={WorkItemDescriptionEditor.name}
                 initialContent={descriptionContent}
                 onSave={(content) => {
                   console.log(content);
