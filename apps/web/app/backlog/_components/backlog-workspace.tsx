@@ -22,15 +22,12 @@ import { Badge } from '@repo/ui/components/ui/badge';
 import { Button } from '@repo/ui/components/ui/button';
 import { Input } from '@repo/ui/components/ui/input';
 import { Textarea } from '@repo/ui/components/ui/textarea';
-import { Label } from '@repo/ui/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from '@repo/ui/components/ui/dialog';
 import {
   Select,
@@ -55,6 +52,8 @@ import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import { Sprint } from '@/app/sprints/_services/sprints.service';
 import { Project as DbProject } from '@/app/projects/_services/projects.service';
 import { User as DbUser } from '@/app/users/_services/users.service';
+import { SprintForm } from '@/app/sprints/_components/sprint-form';
+import { WorkItemForm } from '@/app/work-items/_components/workItem-form';
 
 interface BacklogWorkspaceProps {
   projects: DbProject[];
@@ -125,20 +124,6 @@ export function BacklogWorkspace({
   // Dialogs State
   const [isCreateSprintOpen, setIsCreateSprintOpen] = useState(false);
   const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false);
-
-  // Forms State
-  const [newSprintName, setNewSprintName] = useState('');
-  const [newSprintGoal, setNewSprintGoal] = useState('');
-  const [newSprintStart, setNewSprintStart] = useState('');
-  const [newSprintEnd, setNewSprintEnd] = useState('');
-  const [newSprintProjId, setNewSprintProjId] = useState(projects[0]?.id ?? '');
-
-  const [newIssueTitle, setNewIssueTitle] = useState('');
-  const [newIssueType, setNewIssueType] = useState<'Epic' | 'Story' | 'Task'>('Task');
-  const [newIssuePriority, setNewIssuePriority] = useState<DbWorkItem['priority']>('medium');
-  const [newIssueAssigneeId, setNewIssueAssigneeId] = useState('');
-  const [newIssueSprintId, setNewIssueSprintId] = useState<string>('backlog');
-  const [newIssueProjId, setNewIssueProjId] = useState(projects[0]?.id ?? '');
 
   // Helper: date format range
   const formatDateRange = (start: string | null | Date, end: string | null | Date) => {
@@ -358,73 +343,15 @@ export function BacklogWorkspace({
   };
 
   // Dialog Create Sprint Submission
-  const handleCreateSprintSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSprintName.trim()) return;
-
-    const newSprint: Sprint = {
-      id: crypto.randomUUID(),
-      name: newSprintName,
-      goal: newSprintGoal || null,
-      startDate: newSprintStart || new Date().toISOString().substring(0, 10),
-      endDate: newSprintEnd || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-      status: 'Not Started',
-      createdBy: currentUserId || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      project: projects.find((p) => p.id === newSprintProjId) ?? null,
-    };
-
+  const handleCreateSprintSuccess = (newSprint: Sprint) => {
     setSprintList((prev) => [newSprint, ...prev]);
     setIsCreateSprintOpen(false);
-
-    // Reset Form
-    setNewSprintName('');
-    setNewSprintGoal('');
-    setNewSprintStart('');
-    setNewSprintEnd('');
   };
 
   // Dialog Create Issue Submission
-  const handleCreateIssueSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newIssueTitle.trim()) return;
-
-    const selectedSprintId = newIssueSprintId === 'backlog' ? null : newIssueSprintId;
-    const selectedAssignee = projectMembers.find((m) => m.id === newIssueAssigneeId);
-
-    const newWI: DbWorkItem = {
-      id: crypto.randomUUID(),
-      title: newIssueTitle,
-      project_id: newIssueProjId,
-      sprint_id: selectedSprintId,
-      parent_id: null,
-      type: newIssueType,
-      priority: newIssuePriority,
-      description: null,
-      assignee_id: newIssueAssigneeId || null,
-      reporter_id: currentUserId || null,
-      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-      story_points: null,
-      status: 'New',
-      created_by: currentUserId || null,
-      created_at: new Date().toISOString(),
-      updated_by: null,
-      updated_at: new Date().toISOString(),
-      assignee: selectedAssignee
-        ? { id: selectedAssignee.id, name: selectedAssignee.name, email: selectedAssignee.email }
-        : null,
-    };
-
+  const handleCreateIssueSuccess = (newWI: DbWorkItem) => {
     setWorkItems((prev) => [newWI, ...prev]);
     setIsCreateIssueOpen(false);
-
-    // Reset Form
-    setNewIssueTitle('');
-    setNewIssueType('Task');
-    setNewIssuePriority('medium');
-    setNewIssueAssigneeId('');
-    setNewIssueSprintId('backlog');
   };
 
   // Update inline value of item from details sheet
@@ -1007,204 +934,34 @@ export function BacklogWorkspace({
         </Sheet>
 
         {/* Dialog: Create Sprint */}
-        <Dialog open={isCreateSprintOpen} onOpenChange={setIsCreateSprintOpen}>
-          <DialogContent className="sm:max-w-md bg-card border-border/80 backdrop-blur-md">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold">Create a New Sprint</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Set dates and goals to organize upcoming team deliverables.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateSprintSubmit} className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="sprintName" className="text-xs font-semibold">Sprint Name</Label>
-                <Input
-                  id="sprintName"
-                  value={newSprintName}
-                  onChange={(e) => setNewSprintName(e.target.value)}
-                  placeholder="e.g. Sprint 4 - Auth Setup"
-                  required
-                  className="bg-background/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="sprintStart" className="text-xs font-semibold">Start Date</Label>
-                  <Input
-                    id="sprintStart"
-                    type="date"
-                    value={newSprintStart}
-                    onChange={(e) => setNewSprintStart(e.target.value)}
-                    className="bg-background/50"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="sprintEnd" className="text-xs font-semibold">End Date</Label>
-                  <Input
-                    id="sprintEnd"
-                    type="date"
-                    value={newSprintEnd}
-                    onChange={(e) => setNewSprintEnd(e.target.value)}
-                    className="bg-background/50"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="sprintProject" className="text-xs font-semibold">Associated Project</Label>
-                <Select value={newSprintProjId} onValueChange={setNewSprintProjId}>
-                  <SelectTrigger className="bg-background/50 border-border/80">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((proj) => (
-                      <SelectItem key={proj.id} value={proj.id}>
-                        {proj.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="sprintGoal" className="text-xs font-semibold">Sprint Goal</Label>
-                <Textarea
-                  id="sprintGoal"
-                  value={newSprintGoal}
-                  onChange={(e) => setNewSprintGoal(e.target.value)}
-                  placeholder="e.g. Complete Supabase integration and set up secure middleware"
-                  className="bg-background/50 min-h-20"
-                />
-              </div>
-
-              <DialogFooter className="pt-2">
-                <DialogClose asChild>
-                  <Button variant="outline" type="button" className="cursor-pointer h-9 text-xs">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit" className="cursor-pointer h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
-                  Create Sprint
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {isCreateSprintOpen && (
+          <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
+            <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
+              <SprintForm
+                onSprintUpdated={handleCreateSprintSuccess}
+                onClose={() => setIsCreateSprintOpen(false)}
+                onSuccess={() => setIsCreateSprintOpen(false)}
+                currentUserId={currentUserId}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Dialog: Create Issue */}
         <Dialog open={isCreateIssueOpen} onOpenChange={setIsCreateIssueOpen}>
-          <DialogContent className="sm:max-w-md bg-card border-border/80 backdrop-blur-md">
+          <DialogContent className="sm:max-w-xl bg-card border-border/80 backdrop-blur-md">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold">Create a New Issue</DialogTitle>
+              <DialogTitle className="text-lg font-bold">Create Work Item</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Define the requirements and assign ownership.
+                Add a new work item and assign it to a team member.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateIssueSubmit} className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="issueTitle" className="text-xs font-semibold">Issue Title</Label>
-                <Input
-                  id="issueTitle"
-                  value={newIssueTitle}
-                  onChange={(e) => setNewIssueTitle(e.target.value)}
-                  placeholder="e.g. Build analytics API handler"
-                  required
-                  className="bg-background/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="issueType" className="text-xs font-semibold">Type</Label>
-                  <Select value={newIssueType} onValueChange={(val) => setNewIssueType(val as 'Epic' | 'Story' | 'Task')}>
-                    <SelectTrigger className="bg-background/50 border-border/80">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Task">Task</SelectItem>
-                      <SelectItem value="Story">Story</SelectItem>
-                      <SelectItem value="Epic">Epic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="issuePriority" className="text-xs font-semibold">Priority</Label>
-                  <Select value={newIssuePriority} onValueChange={(val) => setNewIssuePriority(val as DbWorkItem['priority'])}>
-                    <SelectTrigger className="bg-background/50 border-border/80">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="issueAssignee" className="text-xs font-semibold">Assignee</Label>
-                <Select value={newIssueAssigneeId} onValueChange={setNewIssueAssigneeId}>
-                  <SelectTrigger className="bg-background/50 border-border/80">
-                    <SelectValue placeholder="Unassigned" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned_placeholder">Unassigned</SelectItem>
-                    {projectMembers.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="issueProject" className="text-xs font-semibold">Project</Label>
-                  <Select value={newIssueProjId} onValueChange={setNewIssueProjId}>
-                    <SelectTrigger className="bg-background/50 border-border/80">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((proj) => (
-                        <SelectItem key={proj.id} value={proj.id}>
-                          {proj.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="issueSprint" className="text-xs font-semibold">Sprint Assignment</Label>
-                  <Select value={newIssueSprintId} onValueChange={setNewIssueSprintId}>
-                    <SelectTrigger className="bg-background/50 border-border/80">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="backlog">Backlog</SelectItem>
-                      {sprintList.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2">
-                <DialogClose asChild>
-                  <Button variant="outline" type="button" className="cursor-pointer h-9 text-xs">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit" className="cursor-pointer h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
-                  Create Issue
-                </Button>
-              </DialogFooter>
-            </form>
+            <WorkItemForm
+              projects={projects}
+              projectMembers={projectMembers}
+              onClose={() => setIsCreateIssueOpen(false)}
+              onSuccess={handleCreateIssueSuccess}
+            />
           </DialogContent>
         </Dialog>
 
