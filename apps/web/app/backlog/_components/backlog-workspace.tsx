@@ -47,7 +47,7 @@ import {
 import { Separator } from '@repo/ui/components/ui/separator';
 import { Avatar, AvatarFallback } from '@repo/ui/components/ui/avatar';
 
-import { WorkItemStatusBadge } from '@/app/work-items/_components/workItem-status-badge';
+import { WorkItemStatusBadge } from '@/app/work-items/_components/workItem-badge-status';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import { Sprint } from '@/app/sprints/_services/sprints.service';
 import { Project as DbProject } from '@/app/projects/_services/projects.service';
