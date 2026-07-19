@@ -6,6 +6,18 @@ export class WorkItemService {
     return await workItemRepository.get();
   }
 
+  async listWorkItems(
+    page?: number,
+    limit?: number,
+    search?: string
+  ): Promise<{ workItems: DbWorkItem[]; totalCount: number } | DbWorkItem[]> {
+    if (page !== undefined && limit !== undefined) {
+      return await workItemRepository.listPaginated(page, limit, search);
+    }
+
+    return await workItemRepository.get();
+  }
+
   async getWorkItem(workItemId: string): Promise<DbWorkItem> {
     return await workItemRepository.getById(workItemId);
   }

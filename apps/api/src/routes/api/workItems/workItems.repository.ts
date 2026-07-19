@@ -29,6 +29,42 @@ export class WorkItemRepository {
     return data as DbWorkItem[];
   }
 
+  async listPaginated(
+    page: number,
+    limit: number,
+    search?: string
+  ): Promise<{ workItems: DbWorkItem[]; totalCount: number }> {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = supabase
+      .from('work_items')
+      .select('*, assignee:users!assignee_id(id, name, email)', {
+        count: 'exact',
+      });
+
+    if (search?.trim()) {
+      query = query.ilike('title', `%${search.trim()}%`);
+    }
+
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error(
+        'error. failed to list work-items paginated:',
+        error.message
+      );
+      throw new Error('Failed to list work-items');
+    }
+
+    return {
+      workItems: (data ?? []) as DbWorkItem[],
+      totalCount: count ?? 0,
+    };
+  }
+
   async getById(workItemId: string): Promise<DbWorkItem> {
     const assignee = 'assignee:users!assignee_id(id, name, email)';
     const reporter = 'reporter:users!reporter_id(id, name, email)';

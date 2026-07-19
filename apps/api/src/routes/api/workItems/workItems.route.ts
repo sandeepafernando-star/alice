@@ -4,20 +4,44 @@ import {
   requireApiAuth,
   type AuthenticatedRequest,
 } from '../../../middlewares/auth';
+import { parsePagination } from '../../../lib/pagination';
 import { workItemService } from './workItems.service';
 import {
   createUpdateWorkItemBodySchema,
   patchUpdateWorkItemBodySchema,
   SupabaseJson,
 } from './workItems.schemas';
+import type { DbWorkItem } from './workItems.repository';
 
 const workItemsRouter: Router = Router();
 
 workItemsRouter.get(
   '/',
   requireApiAuth,
-  async (_req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res) => {
     try {
+      const searchQuery =
+        typeof req.query.search === 'string' ? req.query.search : undefined;
+      const pagination = parsePagination(req);
+
+      if (pagination) {
+        const { page, limit } = pagination;
+        const result = (await workItemService.listWorkItems(
+          page,
+          limit,
+          searchQuery
+        )) as { workItems: DbWorkItem[]; totalCount: number };
+        const totalPages = Math.max(1, Math.ceil(result.totalCount / limit));
+
+        return res.json({
+          workItems: result.workItems,
+          totalCount: result.totalCount,
+          page,
+          limit,
+          totalPages,
+        });
+      }
+
       const workItems = await workItemService.getWorkItems();
       res.json({ data: workItems, error: null });
     } catch (error) {
