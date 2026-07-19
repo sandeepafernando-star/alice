@@ -14,6 +14,7 @@ import {
   ClipboardPenIcon,
   Kanban,
   ListTodo,
+  User,
 } from '@repo/ui/lib/icons';
 import { cn } from '@repo/ui/lib/utils';
 import {
@@ -91,6 +92,19 @@ export function DashboardSidebar() {
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={
+                    pathname === '/profile' || pathname.startsWith('/profile/')
+                  }
+                >
+                  <Link href="/profile">
+                    <User />
+                    <span>Profile</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton disabled tooltip="Coming soon">
                   <Settings />

@@ -46,9 +46,11 @@ const UserProfile = ({ image }: Readonly<UserProfileProps>) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem>
-          <UserIcon />
-          Profile
+        <DropdownMenuItem asChild>
+          <Link href="/profile">
+            <UserIcon />
+            Profile
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
