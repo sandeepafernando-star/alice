@@ -25,7 +25,8 @@ globs: "**/*"
 
 ### Before you finish
 
-- Run ESLint on touched files and resolve errors (and warnings you introduced).
+- Run `pnpm lint` to eslint on touched files and resolve errors (and warnings you introduced).
+- Run `pnpm checktypes` to make sure the types aligns and ready to transpile to avoid compatibility issues.
 - Run `pnpm format` from the repository root to apply Prettier formatting to changed files (`ts`, `tsx`, `js`, `jsx`, `json`, `css`, `md`).
 
 ## UI Architecture
