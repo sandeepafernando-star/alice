@@ -3,7 +3,7 @@ import {
   formatDate,
   getInitials,
 } from '@/app/_shared/utility';
-import { PriorityBadge } from '@/app/work-items/_components/workItem-priority-badge';
+import { PriorityBadge } from '@/app/work-items/_components/workItem-badge-priority';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import { Avatar, AvatarFallback } from '@repo/ui/components/ui/avatar';
 import { Button } from '@repo/ui/components/ui/button';

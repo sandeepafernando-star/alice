@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { getInitials } from '@/app/_shared/utility';
-import { PriorityBadge } from '@/app/work-items/_components/workItem-priority-badge';
-import { WorkItemStatusBadge } from '@/app/work-items/_components/workItem-status-badge';
+import { PriorityBadge } from '@/app/work-items/_components/workItem-badge-priority';
+import { WorkItemStatusBadge } from '@/app/work-items/_components/workItem-badge-status';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import { Avatar, AvatarFallback } from '@repo/ui/components/ui/avatar';
 import { Badge } from '@repo/ui/components/ui/badge';
@@ -11,6 +11,13 @@ import { Button } from '@repo/ui/components/ui/button';
 import { Card, CardContent } from '@repo/ui/components/ui/card';
 import { Progress } from '@repo/ui/components/ui/progress';
 import { Separator } from '@repo/ui/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from '@repo/ui/components/ui/table';
+import { TruncatedText } from '@repo/ui/components/ui/truncated-text';
 import { cn } from '@repo/ui/lib/utils';
 import {
   ChevronDown,
@@ -108,7 +115,7 @@ function AttachmentCard({
         )}
       </div>
       <CardContent className="space-y-0.5 px-3 py-2.5">
-        <p className="truncate text-sm font-medium">{name}</p>
+        <TruncatedText className="text-sm font-medium">{name}</TruncatedText>
         <p className="text-muted-foreground text-xs">{meta}</p>
       </CardContent>
     </Card>
@@ -283,34 +290,59 @@ export default function WorkItemDetails({
               </span>
             </div>
 
-            <ul className="divide-border divide-y rounded-lg border">
-              {PLACEHOLDER_CHILD_ISSUES.map((child) => (
-                <li
-                  key={child.id}
-                  className={cn(
-                    'hover:bg-muted/40 flex flex-wrap items-center gap-3 px-3 py-2.5 transition-colors'
-                  )}
-                >
-                  <Badge variant="outline" className="font-mono text-[10px]">
-                    {child.key}
-                  </Badge>
-                  <p className="min-w-0 flex-1 truncate text-sm">
-                    {child.title}
-                  </p>
-                  <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-                    <MessageSquare className="size-3.5" />
-                    {child.comments}
-                  </span>
-                  <PriorityBadge priority={workItem.priority} />
-                  <Avatar size="sm">
-                    <AvatarFallback>
-                      {getInitials(workItem.assignee?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <WorkItemStatusBadge status={child.status} />
-                </li>
-              ))}
-            </ul>
+            <div className="rounded-lg border">
+              <Table className="min-w-xl table-fixed">
+                <colgroup>
+                  <col className="w-28" />
+                  <col />
+                  <col className="w-12" />
+                  <col className="w-24" />
+                  <col className="w-10" />
+                  <col className="w-28" />
+                </colgroup>
+                <TableBody>
+                  {PLACEHOLDER_CHILD_ISSUES.map((child) => (
+                    <TableRow
+                      key={child.id}
+                      className="hover:bg-muted/40 border-border"
+                    >
+                      <TableCell className="px-3 py-2.5">
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[10px]"
+                        >
+                          {child.key}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-0 px-2 py-2.5 whitespace-normal">
+                        <TruncatedText className="text-sm">
+                          {child.title}
+                        </TruncatedText>
+                      </TableCell>
+                      <TableCell className="px-2 py-2.5">
+                        <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                          <MessageSquare className="size-3.5 shrink-0" />
+                          {child.comments}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-2 py-2.5">
+                        <PriorityBadge priority={workItem.priority} />
+                      </TableCell>
+                      <TableCell className="px-2 py-2.5">
+                        <Avatar size="sm">
+                          <AvatarFallback>
+                            {getInitials(workItem.assignee?.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell className="px-3 py-2.5">
+                        <WorkItemStatusBadge status={child.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </section>
 
           <Separator />

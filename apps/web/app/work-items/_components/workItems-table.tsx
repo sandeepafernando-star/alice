@@ -53,8 +53,10 @@ import { WorkItemForm } from '@/app/work-items/_components/workItem-form';
 import { DbWorkItem } from '@/app/work-items/_services/workItem.server.service';
 import { WorkItemWorkspaceProps } from '@/app/work-items/_components/workItems-workspace';
 import { formatDate } from '@/app/_shared/utility';
-import statusRenderer from '@/app/work-items/_components/workItem-status-badge';
-import priorityRenderer from '@/app/work-items/_components/workItem-priority-badge';
+import statusRenderer from '@/app/work-items/_components/workItem-badge-status';
+import priorityRenderer from '@/app/work-items/_components/workItem-badge-priority';
+import Link from 'next/link';
+import { cn } from '@repo/ui/lib/utils';
 
 type WorkItemsTableProps = WorkItemWorkspaceProps & {
   currentUserId?: string | null;
@@ -63,22 +65,26 @@ type WorkItemsTableProps = WorkItemWorkspaceProps & {
 export type RendererProps = { row: Row<DbWorkItem> };
 
 const titleRenderer = ({ row }: RendererProps) => (
-  <div className="flex min-w-48 items-center gap-3">
-    <div className="bg-primary/10 text-primary border-primary/20 flex size-8 shrink-0 items-center justify-center rounded-lg border text-xs font-bold">
+  <Link
+    className="flex min-w-48 items-center gap-3"
+    href={`/work-items/${row.original.id}`}
+  >
+    <div
+      className={cn(
+        'bg-primary/10 text-primary border-primary/20',
+        'flex size-8 shrink-0 items-center justify-center',
+        'rounded-lg border text-xs font-bold'
+      )}
+    >
       {row.original.title.slice(0, 1).toUpperCase()}
     </div>
-    <div className="space-y-1">
-      <a
-        className="hover:text-primary font-medium"
-        href={`/work-items/${row.original.id}`}
-      >
-        {row.original.title}
-      </a>
+    <div className="space-y-1 font-medium">
+      {row.original.title}
       <p className="text-muted-foreground text-xs">
         Created {formatDate(row.original.created_at)}
       </p>
     </div>
-  </div>
+  </Link>
 );
 
 const typeRenderer = ({ row }: RendererProps) => (
