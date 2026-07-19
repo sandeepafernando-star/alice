@@ -110,13 +110,13 @@ Common marks:
 
 ## App conventions
 
-| Concern      | Convention                                                                  |
-| ------------ | --------------------------------------------------------------------------- |
-| Read (view)  | `extractWorkItemDescriptionText()` flattens the document to plain text      |
-| Edit         | `toTiptapContent()` converts Supabase `Json` → TipTap `JSONContent`         |
-| Save         | `fromTiptapContent()` converts `JSONContent` → `Json` for persistence       |
-| Validation   | App-layer Zod/schema checks before write; DB stores JSONB as-is             |
-| Legacy seeds | Flat `{ type: "paragraph", text: "..." }` still renders via fallback parser |
+| Concern      | Convention                                                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Read (view)  | `descriptionToHtml()` converts the document to HTML; code blocks are highlighted with lowlight (same engine as the editor) |
+| Edit         | `toTiptapContent()` converts Supabase `Json` → TipTap `JSONContent`                                                        |
+| Save         | `fromTiptapContent()` converts `JSONContent` → `Json` for persistence                                                      |
+| Validation   | App-layer Zod/schema checks before write; DB stores JSONB as-is                                                            |
+| Legacy seeds | Flat `{ type: "paragraph", text: "..." }` still renders via fallback parser                                                |
 
 ---
 

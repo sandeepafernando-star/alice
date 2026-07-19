@@ -191,9 +191,7 @@ const EditorCommandsBar = memo(function ({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add link</DialogTitle>
-            <DialogDescription>
-              Paste a full URL or domain.
-            </DialogDescription>
+            <DialogDescription>Paste a full URL or domain.</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={applyLink} className="space-y-4">

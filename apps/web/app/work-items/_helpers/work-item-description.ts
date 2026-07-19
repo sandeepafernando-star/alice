@@ -1,5 +1,6 @@
 import type { Json } from '@repo/types';
 import type { JSONContent } from '@tiptap/react';
+import { highlightCodeBlockHtml } from '@/app/work-items/_helpers/work-item-description-highlight';
 
 type TiptapMark = {
   type?: string;
@@ -124,7 +125,6 @@ function wrapWithMarks(html: string, marks: TiptapMark[] | undefined): string {
         return `<code>${inner}</code>`;
       case 'link': {
         const href = getAttrString(mark.attrs, 'href')?.trim();
-        // Empty / placeholder hrefs resolve to "<origin>/#" in the browser.
         if (!href || href === '#') {
           return inner;
         }
@@ -137,7 +137,6 @@ function wrapWithMarks(html: string, marks: TiptapMark[] | undefined): string {
   }, html);
 }
 
-/** Walk a TipTap node tree into plain text (lossy). */
 export function nodeToPlainText(node: TiptapNode): string {
   if (node.type === 'hardBreak') {
     return '\n';
@@ -147,7 +146,6 @@ export function nodeToPlainText(node: TiptapNode): string {
     return node.text;
   }
 
-  // Legacy seed shape: paragraph with a top-level `text` field.
   if (node.type === 'paragraph' && typeof node.text === 'string') {
     return node.text;
   }
@@ -191,7 +189,6 @@ export function nodeToPlainText(node: TiptapNode): string {
   return parts.join('');
 }
 
-/** Walk a TipTap node tree into HTML for the description read view. */
 export function nodeToHtml(node: TiptapNode): string {
   if (node.type === 'hardBreak') {
     return '<br />';
@@ -201,7 +198,6 @@ export function nodeToHtml(node: TiptapNode): string {
     return wrapWithMarks(escapeHtml(node.text), node.marks);
   }
 
-  // Legacy seed shape: paragraph with a top-level `text` field.
   if (node.type === 'paragraph' && typeof node.text === 'string') {
     const text = escapeHtml(node.text);
     return text ? `<p>${text}</p>` : '<p></p>';
@@ -237,10 +233,17 @@ export function nodeToHtml(node: TiptapNode): string {
 
     case 'codeBlock': {
       const language = getAttrString(node.attrs, 'language');
+      const rawCode = Array.isArray(node.content)
+        ? node.content.map(nodeToPlainText).join('')
+        : '';
+      const highlighted = highlightCodeBlockHtml(rawCode, language);
       const classAttr = language
         ? ` class="language-${escapeHtml(language)}"`
         : '';
-      return `<pre><code${classAttr}>${children}</code></pre>`;
+      const dataAttr = language
+        ? ` data-language="${escapeHtml(language)}"`
+        : '';
+      return `<pre${dataAttr}><code${classAttr}>${highlighted}</code></pre>`;
     }
 
     case 'blockquote':
@@ -251,26 +254,6 @@ export function nodeToHtml(node: TiptapNode): string {
   }
 }
 
-export function extractWorkItemDescriptionText(
-  description: Json | null
-): string {
-  if (!description) {
-    return EMPTY_DESCRIPTION;
-  }
-
-  if (typeof description === 'string') {
-    return description.trim() || EMPTY_DESCRIPTION;
-  }
-
-  if (typeof description !== 'object' || Array.isArray(description)) {
-    return EMPTY_DESCRIPTION;
-  }
-
-  const text = nodeToPlainText(description as TiptapNode);
-  return text.trim() || EMPTY_DESCRIPTION;
-}
-
-/** TipTap / legacy JSONB → HTML string for `DescriptionView`. */
 export function descriptionToHtml(description: Json | null): string {
   if (!description) {
     return `<p>${escapeHtml(EMPTY_DESCRIPTION)}</p>`;

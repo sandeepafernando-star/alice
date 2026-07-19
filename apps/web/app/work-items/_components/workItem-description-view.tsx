@@ -6,13 +6,14 @@ import parse, {
   Text,
   DOMNode,
   domToReact,
-  attributesToProps,
 } from 'html-react-parser';
 import type { JSX, MouseEvent } from 'react';
 import type { Json } from '@repo/types';
 import { LinkPreview } from '@repo/ui/components/ui/link-preview';
 import { cn } from '@repo/ui/lib/utils';
 import { descriptionToHtml } from '@/app/work-items/_helpers/work-item-description';
+import { CODE_SYNTAX_HIGHLIGHT_CLASSES } from '@/app/work-items/_helpers/work-item-description-code-styles';
+import { shouldShowLanguageBadge } from '@/app/work-items/_helpers/work-item-description-highlight';
 
 type CustomElementHandler = (
   // eslint-disable-next-line no-unused-vars
@@ -28,6 +29,22 @@ function getTextContent(element: Element): string {
   }
 
   return element.attribs.href ?? '';
+}
+
+function getCodeBlockLanguage(element: Element): string | undefined {
+  const fromData = element.attribs['data-language']?.trim();
+  if (fromData) {
+    return fromData;
+  }
+
+  const codeChild = element.children.find(
+    (child): child is Element =>
+      child instanceof Element && child.name === 'code'
+  );
+
+  const className = codeChild?.attribs.class ?? '';
+  const match = /(?:^|\s)language-([^\s]+)/.exec(className);
+  return match?.[1];
 }
 
 const renderAnchor: CustomElementHandler = (element, options) => {
@@ -71,19 +88,38 @@ const renderCodeBlock: CustomElementHandler = (element, options) => {
     return undefined;
   }
 
-  const props = attributesToProps(element.attribs);
+  const language = getCodeBlockLanguage(element);
   const children = domToReact(element.children as DOMNode[], options);
 
   return (
-    <pre
-      {...props}
+    <div
       className={cn(
-        'bg-muted border-border overflow-x-auto rounded-lg border p-3 font-mono text-xs leading-relaxed',
-        props.className
+        'code-block-wrapper group relative my-4',
+        'rounded-md bg-zinc-950 font-mono text-sm'
       )}
     >
-      {children}
-    </pre>
+      {shouldShowLanguageBadge(language) && (
+        <span
+          className={cn(
+            'absolute top-2 right-3 z-10',
+            'border-border/40 rounded border bg-zinc-900 px-1.5',
+            'py-0.5 font-sans text-[10px] font-bold tracking-widest text-zinc-300 uppercase shadow-sm'
+          )}
+        >
+          {language}
+        </span>
+      )}
+
+      <pre
+        className={cn(
+          'm-0 overflow-x-auto bg-transparent p-4 font-mono text-sm leading-relaxed text-zinc-100',
+          shouldShowLanguageBadge(language) && 'pt-10'
+        )}
+        data-language={language}
+      >
+        {children}
+      </pre>
+    </div>
   );
 };
 
@@ -92,8 +128,6 @@ const renderInlineCode: CustomElementHandler = (element, options) => {
     return undefined;
   }
 
-  // Code inside a <pre> is handled by the pre renderer; leave nested code alone
-  // when the parent pass already wrapped it. For inline code, style it.
   const parent = element.parent;
   if (parent instanceof Element && parent.name === 'pre') {
     return undefined;
@@ -102,7 +136,7 @@ const renderInlineCode: CustomElementHandler = (element, options) => {
   const children = domToReact(element.children as DOMNode[], options);
 
   return (
-    <code className="bg-muted rounded px-1 py-0.5 font-mono text-[0.85em]">
+    <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[0.85em] text-zinc-100">
       {children}
     </code>
   );
@@ -209,6 +243,8 @@ export function DescriptionView({
         'prose-ol:text-foreground prose-ul:text-foreground marker:text-foreground',
         '[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0',
         '[&_strong]:text-foreground [&_strong]:font-semibold',
+        '[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-zinc-100',
+        CODE_SYNTAX_HIGHLIGHT_CLASSES,
         className
       )}
     >
