@@ -31,13 +31,8 @@ export function WorkItemTitleEditor({
       return;
     }
 
-    const input = inputRef.current;
-    if (!input) {
-      return;
-    }
-
-    input.focus();
-    input.select();
+    // Keep caret ready for typing without a loud focus ring (outline is styled away).
+    inputRef.current?.focus({ preventScroll: true });
   }, [isEditing]);
 
   const beginEditing = () => {
@@ -106,8 +101,8 @@ export function WorkItemTitleEditor({
           type="button"
           onClick={beginEditing}
           className={cn(
-            'hover:bg-muted/50 w-full cursor-text rounded-md px-1.5 py-0.5 text-left text-2xl font-semibold tracking-tight text-balance transition-colors sm:text-3xl',
-            'focus-visible:ring-ring focus-visible:ring-3 focus-visible:outline-none'
+            'hover:bg-muted/50 w-full cursor-text rounded-md border border-transparent px-1.5 py-0.5 text-left text-2xl font-semibold tracking-tight text-balance transition-colors sm:text-3xl',
+            'outline-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none'
           )}
           title="Click to edit title"
         >
@@ -129,6 +124,8 @@ export function WorkItemTitleEditor({
       onKeyDown={handleKeyDown}
       className={cn(
         'mt-4 h-auto min-h-10 min-w-xl px-1.5 py-1 text-2xl font-semibold tracking-tight sm:text-3xl md:text-3xl',
+        'border-border/50 rounded-md shadow-none',
+        'focus-visible:border-border focus-visible:ring-0 focus-visible:ring-offset-0',
         className
       )}
     />

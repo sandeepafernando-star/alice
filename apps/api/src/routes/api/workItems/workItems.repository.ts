@@ -1,7 +1,7 @@
 import { Tables } from '@repo/types';
 import { supabase } from '../../../lib/supabase';
 import { auditCreateWithoutStatus } from '../../../lib/audit';
-import { WorkItemBody } from './workItems.schemas';
+import { WorkItemBody, WorkItemUpdateBody } from './workItems.schemas';
 
 export type DbWorkItem = Tables<'work_items'>;
 
@@ -9,7 +9,7 @@ export type CreateWorkItemRecord = WorkItemBody & {
   createdBy: string;
 };
 
-export type UpdateWorkItemRecord = WorkItemBody & {
+export type UpdateWorkItemRecord = WorkItemUpdateBody & {
   id: string;
   updatedBy: string;
 };
@@ -117,6 +117,7 @@ export class WorkItemRepository {
         assignee_id: input.assignee_id,
         due_date: input.due_date,
         description: input.description,
+        status: input.status,
         updated_by: input.updatedBy,
         updated_at: new Date().toISOString(),
       })

@@ -8,6 +8,13 @@ const workItemTypeSchema = z.enum(['Epic', 'Story', 'Task'], {
   message: 'Please select a work item type',
 });
 
+export const workItemStatusSchema = z.enum(
+  ['Draft', 'New', 'ToDo', 'InProgress', 'Testing', 'Done'],
+  {
+    message: 'Please select a valid status',
+  }
+);
+
 function todayDateString(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -64,6 +71,9 @@ export const createUpdateWorkItemBodySchema = workItemCoreObject.refine(
 );
 
 export const patchUpdateWorkItemBodySchema = workItemCoreObject
+  .extend({
+    status: workItemStatusSchema,
+  })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update',
@@ -83,3 +93,7 @@ export const patchUpdateWorkItemBodySchema = workItemCoreObject
 
 export type WorkItemBody = z.infer<typeof createUpdateWorkItemBodySchema>;
 export type PatchWorkItemBody = z.infer<typeof patchUpdateWorkItemBodySchema>;
+export type WorkItemStatus = z.infer<typeof workItemStatusSchema>;
+export type WorkItemUpdateBody = WorkItemBody & {
+  status: WorkItemStatus;
+};

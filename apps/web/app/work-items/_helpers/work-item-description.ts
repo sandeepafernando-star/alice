@@ -276,6 +276,25 @@ export function descriptionToHtml(description: Json | null): string {
   return html || `<p>${escapeHtml(EMPTY_DESCRIPTION)}</p>`;
 }
 
+/** TipTap / JSON description → plain text preview (no HTML). */
+export function descriptionToPlainText(description: Json | null): string {
+  if (!description) {
+    return '';
+  }
+
+  if (typeof description === 'string') {
+    return description.trim();
+  }
+
+  if (typeof description !== 'object' || Array.isArray(description)) {
+    return '';
+  }
+
+  return nodeToPlainText(description as TiptapNode)
+    .replace(/\n+/g, ' ')
+    .trim();
+}
+
 export function isTiptapDocument(
   description: Json | null
 ): description is Json & { type: 'doc' } {

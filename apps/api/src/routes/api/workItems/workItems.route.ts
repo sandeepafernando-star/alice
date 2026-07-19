@@ -148,6 +148,7 @@ workItemsRouter.patch(
         description: (parsed.data.description !== undefined
           ? parsed.data.description
           : existingWorkItem.description) as SupabaseJson,
+        status: parsed.data.status ?? existingWorkItem.status,
       };
 
       const workItem = await workItemService.updateWorkItem(

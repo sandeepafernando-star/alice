@@ -37,6 +37,7 @@ import { Json } from '@repo/types';
 import { updateWorkItem } from '@/app/work-items/_services/workItem.client.service';
 import WorkItemSidebar from '@/app/work-items/_components/workItem-details-sidebar';
 import { WorkItemTitleEditor } from '@/app/work-items/_components/workItem-title-editor';
+import { toast } from '@repo/ui/components/ui/sonner';
 
 const PLACEHOLDER_ATTACHMENTS = [
   {
@@ -146,6 +147,7 @@ export default function WorkItemDetails({
 
     setWorkItem((prev) => ({ ...prev, description: content }));
     setEditing(false);
+    toast.success('Description saved');
   };
 
   const handleTitleUpdate = async (nextTitle: string) => {
@@ -154,6 +156,7 @@ export default function WorkItemDetails({
 
     await updateWorkItem(workItem.id, formData);
     setWorkItem((prev) => ({ ...prev, title: nextTitle }));
+    toast.success('Title saved');
   };
 
   return (
