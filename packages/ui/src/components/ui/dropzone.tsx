@@ -27,12 +27,10 @@ function Dropzone({
   children,
   ...options
 }: DropzoneProps) {
-  const { getRootProps, getInputProps, isDragActive, isDragReject, open } =
+  const { getRootProps, getInputProps, isDragActive, isDragReject } =
     useDropzone({
       onDrop,
       disabled,
-      noClick: true,
-      noKeyboard: true,
       ...options,
     });
 
@@ -49,22 +47,6 @@ function Dropzone({
           className
         ),
       })}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      onKeyDown={(event) => {
-        if (disabled) {
-          return;
-        }
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          open();
-        }
-      }}
-      onClick={() => {
-        if (!disabled) {
-          open();
-        }
-      }}
     >
       <input {...getInputProps()} />
       {children ?? (

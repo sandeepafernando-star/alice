@@ -164,8 +164,7 @@ function ClosableAlert({
   const isSuccess = tone === 'success';
 
   return (
-    <div
-      role="status"
+    <output
       className={cn(
         'animate-in fade-in-0 slide-in-from-top-2 flex items-start gap-3 rounded-xl border p-3 duration-300 sm:p-4',
         isSuccess
@@ -212,7 +211,7 @@ function ClosableAlert({
       >
         <X />
       </Button>
-    </div>
+    </output>
   );
 }
 
@@ -382,7 +381,7 @@ export default function UploadFiles() {
         return;
       }
 
-      void startUploads(acceptedFiles);
+      startUploads(acceptedFiles).catch(() => {});
     },
     [startUploads]
   );

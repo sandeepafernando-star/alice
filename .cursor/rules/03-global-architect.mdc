@@ -22,6 +22,8 @@ globs: "**/*"
 - Destructure props in the function parameter list.
 - Follow Rules of Hooks (`eslint-plugin-react-hooks`).
 - Respect `react-refresh/only-export-components` where applicable.
+- Do not put `role="button"` on non-`<button>` elements (SonarQube / a11y). Use a real `<button type="button">` (optionally inside a heading) and style it instead of faking button semantics with ARIA.
+- Do not use the `void someAsyncFn()` pattern to silence floating promises (SonarQube). Prefer `.catch(...)` on the promise, or structure the flow so the async work is awaited in a proper async function.
 
 ### Before you finish
 
