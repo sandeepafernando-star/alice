@@ -1,7 +1,13 @@
 {
   "$schema": "./node_modules/turbo/schema.json",
   "ui": "tui",
-  "globalEnv": ["PORT", "GITHUB_ACTIONS", "NODE_ENV"],
+  "globalEnv": [
+    "PORT",
+    "GITHUB_ACTIONS",
+    "NODE_ENV",
+    "CYPRESS_TEST_USER_EMAIL",
+    "CYPRESS_TEST_USER_PASSWORD"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

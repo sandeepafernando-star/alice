@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import {
   Card,
@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@repo/ui/components/ui/dropdown-menu';
 import { cn } from '@repo/ui/lib/utils';
-import { Plus, Calendar, Pencil } from 'lucide-react';
+import { Plus, Calendar } from '@repo/ui/lib/icons';
 import {
   Sprint,
   updateSprintStatus,
@@ -33,7 +33,7 @@ type SprintListProps = {
   };
   filterTab: 'active' | 'archived';
   // eslint-disable-next-line no-unused-vars
-  onTabChange: (tab: 'active' | 'archived') => void;
+  onTabChange?: (tab: 'active' | 'archived') => void;
   // eslint-disable-next-line no-unused-vars
   onPageChange: (page: number) => void;
   // eslint-disable-next-line no-unused-vars
@@ -46,6 +46,7 @@ type SprintListProps = {
   onAddSprint?: () => void;
   // eslint-disable-next-line no-unused-vars
   onEditSprint?: (sprint: Sprint) => void;
+  isManagerOrAdmin?: boolean;
 };
 
 const STATUS_STYLES = {
@@ -65,11 +66,13 @@ type SprintStatusDropdownProps = {
   sprint: Sprint;
   // eslint-disable-next-line no-unused-vars
   onSprintUpdated?: (sprint: Sprint) => void;
+  disabled?: boolean;
 };
 
 export function SprintStatusDropdown({
   sprint,
   onSprintUpdated,
+  disabled = false,
 }: Readonly<SprintStatusDropdownProps>) {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -86,19 +89,33 @@ export function SprintStatusDropdown({
     }
   };
 
+  if (disabled) {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase',
+          STATUS_STYLES[sprint.status]
+        )}
+      >
+        {sprint.status}
+      </span>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           disabled={isUpdating}
           className={cn(
-            'inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase transition-colors focus:outline-none disabled:opacity-50',
+            'inline-flex h-auto cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase transition-colors focus:outline-none disabled:opacity-50',
             STATUS_STYLES[sprint.status]
           )}
         >
           {sprint.status}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {STATUSES.map((status) => (
@@ -142,13 +159,21 @@ type SprintListItemProps = {
   onSprintUpdated?: (sprint: Sprint) => void;
   // eslint-disable-next-line no-unused-vars
   onEditSprint?: (sprint: Sprint) => void;
+  isManagerOrAdmin?: boolean;
 };
 
 function SprintListItem({
   sprint,
   onSprintUpdated,
   onEditSprint,
+  isManagerOrAdmin = false,
 }: Readonly<SprintListItemProps>) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <li className="space-y-2 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -162,10 +187,19 @@ function SprintListItem({
           <SprintStatusDropdown
             sprint={sprint}
             onSprintUpdated={onSprintUpdated}
+            disabled={!isManagerOrAdmin}
           />
         </div>
         <p className="text-muted-foreground text-sm">
-          {formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}
+          {mounted ? (
+            <>
+              {formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}
+            </>
+          ) : (
+            <span className="invisible">
+              {sprint.startDate} – {sprint.endDate}
+            </span>
+          )}
         </p>
       </div>
       {sprint.project ? (
@@ -182,50 +216,15 @@ function SprintListItem({
         {onEditSprint && (
           <Button
             type="button"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
             onClick={() => onEditSprint(sprint)}
-            className="text-muted-foreground hover:text-foreground shrink-0"
-            aria-label="Edit Sprint"
+            className="h-8 w-20 shrink-0 text-[11px] font-semibold shadow-sm"
           >
-            <Pencil className="h-4 w-4" />
+            Edit
           </Button>
         )}
       </div>
     </li>
-  );
-}
-
-type SprintTabsProps = {
-  filterTab: 'active' | 'archived';
-  // eslint-disable-next-line no-unused-vars
-  setFilterTab: (tab: 'active' | 'archived') => void;
-};
-
-function SprintTabs({ filterTab, setFilterTab }: Readonly<SprintTabsProps>) {
-  return (
-    <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
-      <button
-        onClick={() => setFilterTab('active')}
-        className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
-          filterTab === 'active'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'hover:text-foreground'
-        }`}
-      >
-        Active
-      </button>
-      <button
-        onClick={() => setFilterTab('archived')}
-        className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
-          filterTab === 'archived'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'hover:text-foreground'
-        }`}
-      >
-        Archived
-      </button>
-    </div>
   );
 }
 
@@ -240,6 +239,7 @@ type SprintListContentProps = {
   onSprintUpdated?: (sprint: Sprint) => void;
   // eslint-disable-next-line no-unused-vars
   onEditSprint?: (sprint: Sprint) => void;
+  isManagerOrAdmin?: boolean;
 };
 
 function SprintListContent({
@@ -251,6 +251,7 @@ function SprintListContent({
   onRetry,
   onSprintUpdated,
   onEditSprint,
+  isManagerOrAdmin = false,
 }: Readonly<SprintListContentProps>) {
   if (isLoading) {
     return (
@@ -265,12 +266,7 @@ function SprintListContent({
       <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
         <p className="text-destructive text-sm">{error}</p>
         {onRetry ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onRetry}>
             Try again
           </Button>
         ) : null}
@@ -304,6 +300,7 @@ function SprintListContent({
           sprint={sprint}
           onSprintUpdated={onSprintUpdated}
           onEditSprint={onEditSprint}
+          isManagerOrAdmin={isManagerOrAdmin}
         />
       ))}
     </ul>
@@ -314,7 +311,6 @@ export function SprintList({
   sprints,
   pagination,
   filterTab,
-  onTabChange,
   onPageChange,
   onLimitChange,
   isLoading = false,
@@ -323,6 +319,7 @@ export function SprintList({
   onSprintUpdated,
   onAddSprint,
   onEditSprint,
+  isManagerOrAdmin = false,
 }: Readonly<SprintListProps>) {
   const filteredSprints = sprints;
 
@@ -340,19 +337,16 @@ export function SprintList({
               : 'Archived sprints.'}
           </CardDescription>
         </div>
-        <div className="flex items-center gap-2">
-          <SprintTabs filterTab={filterTab} setFilterTab={onTabChange} />
-          {onAddSprint && (
-            <button
-              type="button"
-              onClick={onAddSprint}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Sprint
-            </button>
-          )}
-        </div>
+        {onAddSprint && (
+          <Button
+            type="button"
+            onClick={onAddSprint}
+            className="h-10 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add Sprint
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <SprintListContent
@@ -364,6 +358,7 @@ export function SprintList({
           onRetry={onRetry}
           onSprintUpdated={onSprintUpdated}
           onEditSprint={onEditSprint}
+          isManagerOrAdmin={isManagerOrAdmin}
         />
         {pagination && pagination.totalCount > 0 && (
           <Pagination

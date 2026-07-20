@@ -7,7 +7,7 @@ import {
   softDeleteProject as apiSoftDeleteProject,
   restoreProject as apiRestoreProject,
   hardDeleteProject as apiHardDeleteProject,
-} from '../_services/projects.service';
+} from '../_services/projects.service.server';
 import {
   parseProjectForm,
   requireProjectManager,
@@ -57,6 +57,8 @@ export async function createProject(
       start_date: parsed.data.start_date ?? null,
       end_date: parsed.data.end_date ?? null,
       status: parsed.data.status,
+      attributes_config: null,
+      workflow_config: null,
     });
 
     revalidatePath('/projects');

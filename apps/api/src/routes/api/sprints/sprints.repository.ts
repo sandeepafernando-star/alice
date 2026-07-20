@@ -48,7 +48,8 @@ export class SprintsRepository {
     userId: string,
     tab: 'active' | 'archived' = 'active',
     page: number = 1,
-    limit: number = 5
+    limit: number = 5,
+    search?: string
   ): Promise<{
     sprints: SprintRowWithProject[];
     totalCount: number;
@@ -58,13 +59,17 @@ export class SprintsRepository {
 
     let query = supabase
       .from('sprints')
-      .select('*, project:projects(id, name, key)', { count: 'exact' })
-      .eq('created_by', userId);
+      .select('*, project:projects(id, name, key)', { count: 'exact' });
 
     if (tab === 'archived') {
       query = query.in('status', ['archived']);
     } else {
       query = query.in('status', ['planned', 'active', 'closed']);
+    }
+
+    if (search) {
+      const sanitized = `%${search}%`;
+      query = query.or(`name.ilike.${sanitized},goal.ilike.${sanitized}`);
     }
 
     const { data, error, count } = await query
@@ -83,7 +88,7 @@ export class SprintsRepository {
   }
 
   async updateStatus(
-    userId: string,
+    _userId: string,
     sprintId: string,
     status: SprintRow['status']
   ): Promise<SprintRowWithProject> {
@@ -91,7 +96,6 @@ export class SprintsRepository {
       .from('sprints')
       .update({ status })
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .select('*, project:projects(id, name, key)')
       .single();
 
@@ -104,14 +108,13 @@ export class SprintsRepository {
   }
 
   async findById(
-    userId: string,
+    _userId: string,
     sprintId: string
   ): Promise<SprintRowWithProject | null> {
     const { data, error } = await supabase
       .from('sprints')
       .select('*, project:projects(id, name, key)')
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .maybeSingle();
 
     if (error) {
@@ -123,7 +126,7 @@ export class SprintsRepository {
   }
 
   async update(
-    userId: string,
+    _userId: string,
     sprintId: string,
     input: {
       name: string;
@@ -144,7 +147,6 @@ export class SprintsRepository {
         updated_at: new Date().toISOString(),
       })
       .eq('id', sprintId)
-      .eq('created_by', userId)
       .select('*, project:projects(id, name, key)')
       .single();
 

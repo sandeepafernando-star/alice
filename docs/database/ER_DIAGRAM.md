@@ -2,38 +2,40 @@
 
 ## Document metadata
 
-| Field        | Value                                                              |
-| ------------ | ------------------------------------------------------------------ |
-| Project      | Alice (1BT Project Management System / Jira Teams)                 |
-| Source       | `1BT-JIRA Task Breakdown with Team Assignments.xlsx` (MVP 1–4)     |
-| Status       | Implemented — `init_jira_domain` + `add_audit_metadata` migrations |
-| Last updated | 2026-06-25                                                         |
+| Field        | Value                                                                     |
+| ------------ | ------------------------------------------------------------------------- |
+| Project      | Alice (1BT Project Management System / Jira Teams)                        |
+| Source       | `1BT-JIRA Task Breakdown with Team Assignments.xlsx` (MVP 1–4)            |
+| Status       | Implemented — `init_jira_domain` + audit migrations + project JSON config |
+| Last updated | 2026-07-16                                                                |
 
 Related:
 
-- `docs/guidelines/DATABASE.md` — migrations and workflow
+- `docs/guides/DATABASE.md` — migrations and workflow
 - `docs/database/AUDIT_COLUMNS.md` — audit column conventions and `@repo/types/audit` helpers
+- `docs/database/WORK_ITEM_DESCRIPTION.md` — TipTap JSON format for `work_items.description`
 - `docs/features/users/USER_MANAGEMENT.md` — `public.users` (partially implemented)
-- `docs/authorization/RBAC_AUTHORIZATION_SKELETON.md` — authorization rollout
+- `docs/auth/RBAC_AUTHORIZATION_SKELETON.md` — authorization rollout
 
 ---
 
 ## Design assumptions
 
-| Topic               | Decision                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| Identity            | Supabase `auth.users` for sign-in; `public.users` for app profile and RBAC                 |
-| Roles               | `admin`, `manager`, `member` on `users.role` (S-09 seeds roles)                            |
-| Backlog             | Not a separate table — `work_items` where `sprint_id IS NULL` (BL-01)                      |
-| Sprint assignment   | `work_items.sprint_id`; assign/unassign via backlog and sprint APIs (BL-04, BL-05, SPR-03) |
-| Work item hierarchy | Self-referential `parent_id` for Epic → Story → Task (WI-07)                               |
-| Rich text           | `work_items.description` stored as JSON document (WI-02)                                   |
-| Soft delete         | `projects.deleted_at` for soft delete; hard delete is Admin-only (PROJ-04)                 |
-| Audit metadata      | All tables: `created_by`, `created_at`, `updated_by`, `updated_at`; see below              |
+| Topic               | Decision                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| Identity            | Supabase `auth.users` for sign-in; `public.users` for app profile and RBAC                               |
+| Roles               | `admin`, `manager`, `member` on `users.role` (S-09 seeds roles)                                          |
+| Backlog             | Not a separate table — `work_items` where `sprint_id IS NULL` (BL-01)                                    |
+| Sprint assignment   | `work_items.sprint_id`; assign/unassign via backlog and sprint APIs (BL-04, BL-05, SPR-03)               |
+| Work item hierarchy | Self-referential `parent_id` for Epic → Story → Task (WI-07)                                             |
+| Rich text           | `work_items.description` stored as TipTap/ProseMirror JSON (see `WORK_ITEM_DESCRIPTION.md`)              |
+| Project config      | `projects.attributes_config` and `projects.workflow_config` JSON — per-project task fields and swimlanes |
+| Soft delete         | `projects.deleted_at` for soft delete; hard delete is Admin-only (PROJ-04)                               |
+| Audit metadata      | All tables: `created_by`, `created_at`, `updated_by`, `updated_at`; see below                            |
 
 ---
 
-## ER diagram
+## ER-diagram
 
 ```mermaid
 erDiagram
@@ -85,6 +87,8 @@ erDiagram
         uuid owner_id FK
         date start_date
         date end_date
+        json attributes_config "nullable, per-project custom fields"
+        json workflow_config "nullable, swimlane / status flow"
         string status "ProjectStatus"
         timestamptz deleted_at "soft delete"
         uuid created_by FK "nullable"
@@ -154,7 +158,7 @@ erDiagram
         string title
         string type "Epic|Story|Task"
         string priority
-        json description "rich text JSON"
+        json description "TipTap ProseMirror JSON"
         uuid assignee_id FK "nullable"
         uuid reporter_id FK "nullable"
         date due_date "nullable"
@@ -248,14 +252,14 @@ users ──1:N──► notifications
 
 ## Implementation status
 
-| Entity                   | In `schema.prisma` today                        |
-| ------------------------ | ----------------------------------------------- |
-| `instruments`            | Yes — dev baseline with full audit columns      |
-| `users`                  | Yes — `init_jira_domain` + `add_audit_metadata` |
-| `projects`               | Yes — `init_jira_domain` + `add_audit_metadata` |
-| `teams`, `sprints`, etc. | Yes — `init_jira_domain` + `add_audit_metadata` |
+| Entity        | In `schema.prisma` today                                   |
+| ------------- | ---------------------------------------------------------- |
+| `instruments` | Yes — dev baseline with full audit columns                 |
+| `users`       | Yes — `init_jira_domain` + audit migrations                |
+| `projects`    | Yes — includes `attributes_config`, `workflow_config` JSON |
+| `teams`, etc. | Yes — `init_jira_domain` + audit migrations                |
 
-When implementing, add tables via `packages/db/prisma/schema.prisma` and `pnpm db create:migrate:win <name>`. Each migration appends Supabase grants automatically (see `docs/guidelines/DATABASE.md`).
+When implementing, add tables via `packages/db/prisma/schema.prisma` and `pnpm db create:migrate:win <name>`. Each migration appends Supabase grants automatically (see `docs/guides/DATABASE.md`).
 
 ---
 

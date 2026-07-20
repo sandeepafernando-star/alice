@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useTransition, ReactNode, useEffect } from 'react';
+import { useState, useTransition, ReactNode } from 'react';
+import Link from 'next/link';
 import { usePaginationNavigation } from '@/hooks/use-pagination-navigation';
+import { useDebouncedSearch } from '@/hooks/use-debounced-search';
 import {
   Card,
   CardContent,
@@ -9,7 +11,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
+import { Button } from '@repo/ui/components/ui/button';
+import { Input } from '@repo/ui/components/ui/input';
+import { cn } from '@repo/ui/lib/utils';
 import { ProjectForm } from './project-form';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@repo/ui/components/ui/table';
 import {
   softDeleteProject,
   restoreProject,
@@ -26,24 +39,22 @@ import {
   Plus,
   Search,
   FolderOpen,
-} from 'lucide-react';
-import type { Tables } from '@repo/types';
+  Archive,
+  Pencil,
+} from '@repo/ui/lib/icons';
 import { Pagination } from '@/components/pagination';
-
-type DbUser = Tables<'users'>;
-type DbProject = Tables<'projects'> & {
-  owner?: Pick<DbUser, 'id' | 'name' | 'email'> | null;
-};
+import type { Project } from '../_services/projects.service';
+import type { User } from '@/app/users/_services/users.service';
 
 interface ProjectRegistryProps {
-  readonly projects: DbProject[];
+  readonly projects: Project[];
   readonly totalCount: number;
   readonly page: number;
   readonly limit: number;
   readonly totalPages: number;
   readonly tab: 'active' | 'archived';
   readonly search: string;
-  readonly users: DbUser[];
+  readonly users: User[];
   readonly currentUserId?: string | null;
   readonly currentUserRole?: string | null;
 }
@@ -68,12 +79,10 @@ export function ProjectRegistry({
     searchParams,
   } = usePaginationNavigation(totalPages, limit);
 
-  const [searchQuery, setSearchQuery] = useState(search);
+  const { searchQuery, setSearchQuery } = useDebouncedSearch(search);
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
-  const [projectToEdit, setProjectToEdit] = useState<DbProject | null>(null);
-  const [projectToDelete, setProjectToDelete] = useState<DbProject | null>(
-    null
-  );
+  const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteMode, setDeleteMode] = useState<'soft' | 'hard'>('soft');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -81,27 +90,6 @@ export function ProjectRegistry({
   const isManagerOrAdmin =
     currentUserRole === 'admin' || currentUserRole === 'manager';
   const isAdmin = currentUserRole === 'admin';
-
-  // Synchronize search input changes with URL queries via debounce
-  useEffect(() => {
-    const currentSearch = searchParams.get('search') ?? '';
-    if (searchQuery === currentSearch) {
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) {
-        params.set('search', searchQuery);
-      } else {
-        params.delete('search');
-      }
-      params.set('page', '1'); // reset page
-      router.push(`${pathname}?${params.toString()}`);
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, pathname, router, searchParams]);
 
   const handleTabChange = (newTab: 'active' | 'archived') => {
     const params = new URLSearchParams(searchParams.toString());
@@ -112,13 +100,13 @@ export function ProjectRegistry({
 
   const filteredProjects = projects;
 
-  const handleSoftDelete = (proj: DbProject) => {
+  const handleSoftDelete = (proj: Project) => {
     setProjectToDelete(proj);
     setDeleteMode('soft');
     setError(null);
   };
 
-  const handleHardDelete = (proj: DbProject) => {
+  const handleHardDelete = (proj: Project) => {
     setProjectToDelete(proj);
     setDeleteMode('hard');
     setError(null);
@@ -138,17 +126,20 @@ export function ProjectRegistry({
       if (result.success) {
         setProjectToDelete(null);
         setError(null);
+        router.refresh();
       } else {
         setError(result.error || `Failed to ${deleteMode} delete project.`);
       }
     });
   };
 
-  const handleRestore = (proj: DbProject) => {
+  const handleRestore = (proj: Project) => {
     setError(null);
     startTransition(async () => {
       const result = await restoreProject(proj.id);
-      if (!result.success) {
+      if (result.success) {
+        router.refresh();
+      } else {
         setError(result.error || 'Failed to restore project.');
       }
     });
@@ -174,12 +165,13 @@ export function ProjectRegistry({
         <div className="text-destructive bg-destructive/10 border-destructive/20 relative flex items-center gap-2 rounded-lg border p-3 text-sm">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
-          <button
+          <Button
+            variant="link"
             onClick={() => setError(null)}
-            className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+            className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 
@@ -187,51 +179,55 @@ export function ProjectRegistry({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-md flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <input
+          <Input
             type="text"
             placeholder="Search projects by name, key, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-input bg-background/50 placeholder:text-muted-foreground focus-visible:ring-primary flex h-10 w-full rounded-md border py-2 pr-4 pl-10 text-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-background/50 h-10 py-2 pr-4 pl-10"
           />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Tabs */}
           <div className="bg-muted/50 border-border text-muted-foreground inline-flex h-10 items-center justify-center rounded-md border p-1">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => handleTabChange('active')}
-              className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                 tab === 'active'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Active
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => handleTabChange('archived')}
-              className={`ring-offset-background inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${
+              className={cn(
+                'h-8 cursor-pointer rounded-sm px-3 text-xs font-semibold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                 tab === 'archived'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground'
-              }`}
+                  ? 'bg-background text-foreground hover:bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              )}
             >
               Archived
-            </button>
+            </Button>
           </div>
 
           {isManagerOrAdmin && (
-            <button
+            <Button
               onClick={() => {
                 setProjectToEdit(null);
                 setIsAddProjectOpen(true);
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="flex h-10 w-32 shrink-0 items-center justify-center px-6 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
             >
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Plus className="mr-1.5 h-4 w-4 shrink-0" />
               Add Project
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -257,133 +253,38 @@ export function ProjectRegistry({
             </div>
           ) : (
             <>
-              <div className="divide-border divide-y">
-                {filteredProjects.map((proj) => {
-                  const ownerName = proj.owner?.name ?? 'Unknown Owner';
-                  const ownerEmail = proj.owner?.email ?? '';
-                  const isOwnerSelf = proj.owner_id === currentUserId;
-
-                  return (
-                    <div
-                      key={proj.id}
-                      className="group flex flex-col justify-between gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="bg-primary/10 text-primary border-primary/20 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-sm font-bold shadow-sm transition-all duration-300 group-hover:scale-105">
-                          {proj.key.slice(0, 2)}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[31%]">Project</TableHead>
+                      <TableHead className="w-[31%]">Owner</TableHead>
+                      <TableHead className="w-[18%]">Timeline</TableHead>
+                      <TableHead className="w-[20%] pr-4">
+                        <div className="flex justify-end">
+                          <div className="w-50 text-left">Actions</div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-foreground group-hover:text-primary flex items-center gap-2 text-sm leading-none font-semibold transition-colors">
-                            <span className="truncate">{proj.name}</span>
-                            {proj.status === 'archived' && (
-                              <span className="py-0.2 rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 text-[10px] font-semibold tracking-normal text-amber-600 uppercase shrink-0">
-                                Archived
-                              </span>
-                            )}
-                          </h4>
-                          {proj.description && (
-                            <p className="text-muted-foreground truncate text-xs mt-1">
-                              {proj.description}
-                            </p>
-                          )}
-                          <span className="text-muted-foreground mt-1 flex items-center gap-1 text-xs min-w-0">
-                            <Shield className="h-3 w-3 shrink-0" />
-                            <span className="truncate">
-                              Owner:{' '}
-                              <strong className="text-foreground">
-                                {ownerName}
-                              </strong>
-                              {ownerEmail && ` (${ownerEmail})`}
-                            </span>
-                            {isOwnerSelf && (
-                              <span className="bg-primary/25 border-primary/30 text-primary py-0.2 ml-1.5 rounded-full border px-1.5 text-[9px] font-semibold tracking-normal uppercase shrink-0">
-                                You
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[180px_90px_90px] sm:gap-4 sm:items-center sm:shrink-0">
-                        <div className="flex justify-start">
-                          <span className="text-muted-foreground flex items-center gap-1 text-xs justify-start">
-                            <Calendar className="h-3 w-3 shrink-0" />
-                            <span className="truncate">
-                              {proj.start_date || proj.end_date ? (
-                                <>
-                                  {proj.start_date
-                                    ? new Date(proj.start_date).toLocaleDateString(
-                                        undefined,
-                                        { month: 'short', year: 'numeric' }
-                                      )
-                                    : 'Start'}
-                                  {' — '}
-                                  {proj.end_date
-                                    ? new Date(proj.end_date).toLocaleDateString(
-                                        undefined,
-                                        { month: 'short', year: 'numeric' }
-                                      )
-                                    : 'End'}
-                                </>
-                              ) : (
-                                'No timeline configured'
-                              )}
-                            </span>
-                          </span>
-                        </div>
-
-                        <div className="flex justify-start w-full">
-                          {tab === 'active' ? (
-                            isManagerOrAdmin && (
-                              <button
-                                onClick={() => setProjectToEdit(proj)}
-                                className="border-input hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-semibold shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none"
-                              >
-                                Edit
-                              </button>
-                            )
-                          ) : (
-                            isManagerOrAdmin && (
-                              <button
-                                disabled={isPending}
-                                onClick={() => handleRestore(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 text-[11px] shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
-                              >
-                                <RefreshCw className="mr-1 h-3 w-3 shrink-0" />
-                                Restore
-                              </button>
-                            )
-                          )}
-                        </div>
-
-                        <div className="flex justify-start w-full">
-                          {tab === 'active' ? (
-                            isManagerOrAdmin && (
-                              <button
-                                disabled={isPending}
-                                onClick={() => handleSoftDelete(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 text-[11px] shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
-                              >
-                                Delete
-                              </button>
-                            )
-                          ) : (
-                            isAdmin && (
-                              <button
-                                disabled={isPending}
-                                onClick={() => handleHardDelete(proj)}
-                                className="focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-600 text-[11px] shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
-                              >
-                                <Trash2 className="mr-1 h-3 w-3 shrink-0" />
-                                Purge
-                              </button>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProjects.map((proj) => (
+                      <ProjectRegistryRow
+                        key={proj.id}
+                        proj={proj}
+                        currentUserId={currentUserId}
+                        isPending={isPending}
+                        tab={tab}
+                        isManagerOrAdmin={isManagerOrAdmin}
+                        isAdmin={isAdmin}
+                        setProjectToEdit={setProjectToEdit}
+                        handleRestore={handleRestore}
+                        handleSoftDelete={handleSoftDelete}
+                        handleHardDelete={handleHardDelete}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
 
               <Pagination
@@ -407,7 +308,10 @@ export function ProjectRegistry({
             <ProjectForm
               users={users}
               onClose={() => setIsAddProjectOpen(false)}
-              onSuccess={() => setIsAddProjectOpen(false)}
+              onSuccess={() => {
+                setIsAddProjectOpen(false);
+                router.refresh();
+              }}
             />
           </div>
         </div>
@@ -418,9 +322,12 @@ export function ProjectRegistry({
           <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
             <ProjectForm
               users={users}
-              projectToEdit={projectToEdit}
+              projectId={projectToEdit.id}
               onClose={() => setProjectToEdit(null)}
-              onSuccess={() => setProjectToEdit(null)}
+              onSuccess={() => {
+                setProjectToEdit(null);
+                router.refresh();
+              }}
             />
           </div>
         </div>
@@ -462,26 +369,187 @@ export function ProjectRegistry({
             </div>
 
             <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 disabled={isPending}
                 onClick={() => setProjectToDelete(null)}
-                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="h-9 px-4 text-xs font-semibold"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isPending}
                 onClick={confirmDelete}
-                className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none"
+                className="bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm hover:bg-rose-700"
               >
                 {deleteButtonText}
-              </button>
+              </Button>
             </div>
           </dialog>
         </div>
       )}
     </div>
+  );
+}
+
+function formatTimeline(startDate?: string | null, endDate?: string | null) {
+  if (!startDate && !endDate) return 'No timeline';
+  const startStr = startDate
+    ? new Date(startDate).toLocaleDateString(undefined, {
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'Start';
+  const endStr = endDate
+    ? new Date(endDate).toLocaleDateString(undefined, {
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'End';
+  return `${startStr} - ${endStr}`;
+}
+
+/* eslint-disable no-unused-vars */
+interface ProjectRegistryRowProps {
+  readonly proj: Project;
+  readonly currentUserId: string | null | undefined;
+  readonly isPending: boolean;
+  readonly tab: 'active' | 'archived';
+  readonly isManagerOrAdmin: boolean;
+  readonly isAdmin: boolean;
+  readonly setProjectToEdit: (proj: Project | null) => void;
+  readonly handleRestore: (proj: Project) => void;
+  readonly handleSoftDelete: (proj: Project) => void;
+  readonly handleHardDelete: (proj: Project) => void;
+}
+/* eslint-enable no-unused-vars */
+
+function ProjectRegistryRow({
+  proj,
+  currentUserId,
+  isPending,
+  tab,
+  isManagerOrAdmin,
+  isAdmin,
+  setProjectToEdit,
+  handleRestore,
+  handleSoftDelete,
+  handleHardDelete,
+}: ProjectRegistryRowProps) {
+  const ownerName = proj.owner?.name ?? 'Unknown Owner';
+  const ownerEmail = proj.owner?.email ?? '';
+  const isOwnerSelf = proj.owner_id === currentUserId;
+
+  // Extract action buttons to avoid nested conditional JSX (SonarQube compliance)
+  let primaryButton = <div className="w-20 shrink-0" />;
+  if (isManagerOrAdmin) {
+    primaryButton =
+      tab === 'active' ? (
+        <Button
+          variant="outline"
+          disabled={isPending}
+          onClick={() => setProjectToEdit(proj)}
+          className="focus-visible:ring-ring flex h-8 w-20 shrink-0 items-center justify-center border-emerald-500/20 bg-emerald-500/10 text-[11px] font-semibold text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+        >
+          <Pencil className="mr-1 h-3 w-3 shrink-0" />
+          <span>Edit</span>
+        </Button>
+      ) : (
+        <Button
+          disabled={isPending}
+          onClick={() => handleRestore(proj)}
+          className="flex h-8 w-20 shrink-0 items-center justify-center border-emerald-500/20 bg-emerald-500/10 text-[11px] text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white disabled:opacity-50"
+        >
+          <RefreshCw className="mr-1 h-3 w-3 shrink-0" />
+          <span>Restore</span>
+        </Button>
+      );
+  }
+
+  let secondaryButton = <div className="w-28 shrink-0" />;
+  if (tab === 'active' && isManagerOrAdmin) {
+    secondaryButton = (
+      <Button
+        disabled={isPending}
+        onClick={() => handleSoftDelete(proj)}
+        className="focus-visible:ring-ring flex h-8 w-28 shrink-0 items-center justify-center border border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm transition-all hover:bg-rose-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+      >
+        <Archive className="mr-1 h-3 w-3 shrink-0" />
+        <span>Archive</span>
+      </Button>
+    );
+  } else if (tab !== 'active' && isAdmin) {
+    secondaryButton = (
+      <Button
+        disabled={isPending}
+        onClick={() => handleHardDelete(proj)}
+        className="flex h-8 w-28 shrink-0 items-center justify-center border-rose-500/20 bg-rose-500/10 text-[11px] text-rose-600 shadow-sm hover:bg-rose-600 hover:text-white disabled:opacity-50"
+      >
+        <Trash2 className="mr-1 h-3 w-3 shrink-0" />
+        <span>Purge</span>
+      </Button>
+    );
+  }
+
+  return (
+    <TableRow className="hover:bg-accent/40 h-16">
+      <TableCell className="w-[31%] font-medium">
+        <Link
+          href={`/projects/${proj.id}`}
+          className="group/row flex items-center gap-3 transition-opacity hover:opacity-85"
+        >
+          <div className="bg-primary/10 text-primary border-primary/20 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-bold shadow-sm transition-all duration-300 group-hover/row:scale-105">
+            {proj.key.slice(0, 2)}
+          </div>
+          <div className="min-w-0">
+            <div className="text-foreground group-hover/row:text-primary flex items-center gap-2 text-sm font-semibold transition-colors">
+              <span className="truncate">{proj.name}</span>
+              {proj.status === 'archived' && (
+                <span className="py-0.2 shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 text-[9px] font-semibold tracking-normal text-amber-600 uppercase">
+                  Archived
+                </span>
+              )}
+            </div>
+            {proj.description && (
+              <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
+                {proj.description}
+              </p>
+            )}
+          </div>
+        </Link>
+      </TableCell>
+      <TableCell className="w-[31%]">
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+          <Shield className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            <strong className="text-foreground font-semibold">
+              {ownerName}
+            </strong>
+            {ownerEmail && ` (${ownerEmail})`}
+          </span>
+          {isOwnerSelf && (
+            <span className="bg-primary/25 border-primary/30 text-primary py-0.2 ml-1.5 shrink-0 rounded-full border px-1.5 text-[9px] font-semibold tracking-normal uppercase">
+              You
+            </span>
+          )}
+        </span>
+      </TableCell>
+      <TableCell className="w-[18%]">
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+          <Calendar className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            {formatTimeline(proj.start_date, proj.end_date)}
+          </span>
+        </span>
+      </TableCell>
+      <TableCell className="w-[20%] pr-4 text-right">
+        <div className="flex justify-end gap-2">
+          {primaryButton}
+          {secondaryButton}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

@@ -1,34 +1,42 @@
 import type { ReactNode } from 'react';
 import { SidebarInset, SidebarProvider } from '@repo/ui/components/ui/sidebar';
 import { TooltipProvider } from '@repo/ui/components/ui/tooltip';
+import { cn } from '@repo/ui/lib/utils';
 import { DashboardHeader } from './dashboard-header';
 import { DashboardSidebar } from './dashboard-sidebar';
-import { User } from '@supabase/supabase-js';
+import type { DashboardBreadcrumbOverride } from './dashboard-breadcrumb';
 
 type DashboardShellProps = {
-  title: string;
   description?: string;
-  user: User;
+  breadcrumbOverrides?: DashboardBreadcrumbOverride[];
   children: ReactNode;
+  /** When false, sidebar starts collapsed (icon rail). */
+  sidebarDefaultOpen?: boolean;
+  contentClassName?: string;
 };
 
-export function DashboardShell({
-  title,
+export async function DashboardShell({
   description,
-  user,
+  breadcrumbOverrides,
   children,
+  sidebarDefaultOpen = true,
+  contentClassName,
 }: Readonly<DashboardShellProps>) {
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={sidebarDefaultOpen}>
         <DashboardSidebar />
         <SidebarInset>
           <DashboardHeader
-            title={title}
             description={description}
-            user={user}
+            breadcrumbOverrides={breadcrumbOverrides}
           />
-          <div className="flex flex-1 flex-col overflow-y-auto p-6">
+          <div
+            className={cn(
+              'flex flex-1 flex-col overflow-y-auto p-6',
+              contentClassName
+            )}
+          >
             {children}
           </div>
         </SidebarInset>

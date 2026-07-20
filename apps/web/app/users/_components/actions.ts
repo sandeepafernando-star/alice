@@ -6,16 +6,13 @@ import {
   createUser as apiCreateUser,
   updateUser as apiUpdateUser,
   toggleUserActive as apiToggleUserActive,
-} from '../_services/users.service';
+} from '../_services/users.service.server';
 import {
   buildAuthCallbackUrl,
   resolveRequestOrigin,
 } from '@/lib/auth-redirect';
 import { getDbUser } from '@/lib/auth';
-import {
-  createUserSchema,
-  updateUserSchema,
-} from '@repo/types';
+import { createUserSchema, updateUserSchema } from '@repo/types';
 
 export type ActionState = {
   success: boolean;

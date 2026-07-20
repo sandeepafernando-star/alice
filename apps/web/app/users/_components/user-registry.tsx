@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { usePaginationNavigation } from '@/hooks/use-pagination-navigation';
 import {
   Card,
@@ -11,6 +11,14 @@ import {
 } from '@repo/ui/components/ui/card';
 import { UserForm } from './user-form';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@repo/ui/components/ui/table';
+import {
   Users,
   Mail,
   Shield,
@@ -20,16 +28,17 @@ import {
   Loader2,
   AlertTriangle,
   UserPlus,
-} from 'lucide-react';
-import type { Tables } from '@repo/types';
-import { toggleUserActive } from './actions';
+  Pencil,
+} from '@repo/ui/lib/icons';
+import { toggleUserActive } from '../_services/users.service';
 import { CustomSpinner } from '@/app/users/_components/user-spinner';
 import { Pagination } from '@/components/pagination';
-
-type DbUser = Tables<'users'>;
+import { Button } from '@repo/ui/components/ui/button';
+import { cn } from '@repo/ui/lib/utils';
+import type { User } from '../_services/users.service';
 
 interface UserRegistryProps {
-  readonly users: DbUser[];
+  readonly users: User[];
   readonly totalCount: number;
   readonly page: number;
   readonly limit: number;
@@ -67,49 +76,62 @@ export function UserRegistry({
   currentUserId,
   currentUserRole,
 }: Readonly<UserRegistryProps>) {
-  const { handlePageChange, handleLimitChange } = usePaginationNavigation(totalPages, limit);
+  const { handlePageChange, handleLimitChange, router } =
+    usePaginationNavigation(totalPages, limit);
 
   const [mounted, setMounted] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<DbUser | null>(null);
-  const [deactivatingUser, setDeactivatingUser] = useState<DbUser | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isTogglingActive, setIsTogglingActive] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleToggleActive = (user: DbUser) => {
+  const handleToggleActive = (user: User) => {
     if (user.active) {
       // Trigger confirmation modal for deactivation
       setDeactivatingUser(user);
       setError(null);
     } else {
       // Activate immediately
-      startTransition(async () => {
-        const result = await toggleUserActive(user.id, true);
-        if (result.success) {
+      setIsTogglingActive(true);
+      toggleUserActive(user.id, true)
+        .then(() => {
           setError(null);
-        } else {
-          setError(result.error || 'Failed to activate user.');
-        }
-      });
+          router.refresh();
+        })
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : 'Failed to activate user.';
+          setError(message);
+        })
+        .finally(() => {
+          setIsTogglingActive(false);
+        });
     }
   };
 
   const confirmDeactivation = () => {
     if (!deactivatingUser) return;
 
-    startTransition(async () => {
-      const result = await toggleUserActive(deactivatingUser.id, false);
-      if (result.success) {
+    setIsTogglingActive(true);
+    toggleUserActive(deactivatingUser.id, false)
+      .then(() => {
         setDeactivatingUser(null);
         setError(null);
-      } else {
-        setError(result.error || 'Failed to deactivate user.');
-      }
-    });
+        router.refresh();
+      })
+      .catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : 'Failed to deactivate user.';
+        setError(message);
+      })
+      .finally(() => {
+        setIsTogglingActive(false);
+      });
   };
 
   return (
@@ -119,12 +141,13 @@ export function UserRegistry({
           <div className="text-destructive bg-destructive/10 border-destructive/20 absolute top-4 right-4 left-4 z-10 flex items-center gap-2 rounded-lg border p-3 text-sm">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
-            <button
+            <Button
+              variant="link"
               onClick={() => setError(null)}
-              className="ml-auto cursor-pointer text-xs hover:underline focus:outline-none"
+              className="text-destructive ml-auto h-auto cursor-pointer p-0 text-xs hover:underline focus:outline-none"
             >
               Dismiss
-            </button>
+            </Button>
           </div>
         )}
 
@@ -140,13 +163,13 @@ export function UserRegistry({
             </CardDescription>
           </div>
           {currentUserRole === 'admin' && (
-            <button
+            <Button
               onClick={() => setIsAddUserOpen(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/95 inline-flex h-10 cursor-pointer items-center justify-center rounded-md px-4 text-xs font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="flex h-10 w-32 shrink-0 items-center justify-center px-6 text-xs font-semibold shadow-md duration-300 hover:shadow-lg"
             >
-              <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+              <UserPlus className="mr-1.5 h-3.5 w-3.5 shrink-0" />
               Add User
-            </button>
+            </Button>
           )}
         </CardHeader>
         <CardContent>
@@ -160,144 +183,47 @@ export function UserRegistry({
             </div>
           ) : (
             <>
-              <div className="divide-border divide-y">
-              {users.map((usr) => {
-                const isSelf = usr.id === currentUserId;
-                const isDeactivating =
-                  isPending && deactivatingUser?.id === usr.id;
-                return (
-                  <div
-                    key={usr.id}
-                    className="group flex flex-col justify-between gap-4 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold shadow-sm transition-all duration-300 group-hover:scale-105 ${
-                          usr.active
-                            ? 'bg-primary/10 text-primary border-primary/20'
-                            : 'bg-muted text-muted-foreground border-muted-foreground/20'
-                        }`}
-                      >
-                        {getAvatarPlaceholder(usr.name)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4
-                          className={`flex items-center gap-2 text-sm leading-none font-semibold transition-colors ${
-                            usr.active
-                              ? 'text-foreground group-hover:text-primary'
-                              : 'text-muted-foreground line-through'
-                          }`}
-                        >
-                          <span className="truncate">{usr.name}</span>
-                          {isSelf && (
-                            <span className="bg-primary/25 border-primary/30 text-primary py-0.2 rounded-full border px-1.5 text-[10px] tracking-normal normal-case shrink-0">
-                              You
-                            </span>
-                          )}
-                        </h4>
-                        <span className="text-muted-foreground mt-1 flex items-center gap-1 text-xs min-w-0">
-                          <Mail className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{usr.email}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 pl-13 sm:pl-0 sm:grid sm:grid-cols-[110px_90px_120px_90px_120px] sm:gap-3 sm:items-center sm:shrink-0">
-                      <div className="flex justify-start">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${getRoleBadgeStyles(usr.role)}`}
-                        >
-                          <Shield className="h-3 w-3" />
-                          {usr.role}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-start">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wider uppercase ${
-                            usr.active
-                              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
-                              : 'border-rose-500/20 bg-rose-500/10 text-rose-500'
-                          }`}
-                        >
-                          {usr.active ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-
-                      <div className="text-muted-foreground flex items-center gap-1 text-xs justify-start">
-                        {mounted ? (
-                          <div className="flex gap-1 items-center">
-                            <Calendar className="h-3 w-3 shrink-0" />
-                            <span>
-                              {new Date(usr.created_at).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                }
-                              )}
-                            </span>
-                          </div>
-                        ) : (
-                          <CustomSpinner />
-                        )}
-                      </div>
-
-                      <div className="flex justify-start">
-                        {currentUserRole === 'admin' && (
-                          <button
-                            disabled={isPending}
-                            onClick={() => setEditingUser(usr)}
-                            className="border-input bg-background hover:bg-accent text-foreground focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md border text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none"
-                          >
-                            Edit
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex justify-start">
-                        {currentUserRole === 'admin' && !isSelf && (
-                          <button
-                            disabled={isPending}
-                            onClick={() => handleToggleActive(usr)}
-                            className={`focus-visible:ring-ring inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-[11px] font-medium transition-all focus-visible:ring-2 focus-visible:outline-none ${
-                              usr.active
-                                ? 'border border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
-                                : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                            }`}
-                          >
-                            {isDeactivating && (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            )}
-                            {!isDeactivating && usr.active && (
-                              <>
-                                <UserX className="mr-1 h-3 w-3" />
-                                Deactivate
-                              </>
-                            )}
-                            {!isDeactivating && !usr.active && (
-                              <>
-                                <UserCheck className="mr-1 h-3 w-3" />
-                                Activate
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <Pagination
-              totalCount={totalCount}
-              page={page}
-              limit={limit}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onLimitChange={handleLimitChange}
-              label="users"
-            />
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[35%]">User</TableHead>
+                      <TableHead className="w-[15%]">Role</TableHead>
+                      <TableHead className="w-[12%]">Status</TableHead>
+                      <TableHead className="w-[18%]">Joined Date</TableHead>
+                      <TableHead className="w-[20%] pr-4">
+                        <div className="flex justify-end">
+                          <div className="w-50 text-left">Actions</div>
+                        </div>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((usr) => (
+                      <UserRegistryRow
+                        key={usr.id}
+                        usr={usr}
+                        currentUserId={currentUserId}
+                        currentUserRole={currentUserRole}
+                        isTogglingActive={isTogglingActive}
+                        deactivatingUser={deactivatingUser}
+                        mounted={mounted}
+                        setEditingUser={setEditingUser}
+                        handleToggleActive={handleToggleActive}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <Pagination
+                totalCount={totalCount}
+                page={page}
+                limit={limit}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+                label="users"
+              />
             </>
           )}
         </CardContent>
@@ -342,21 +268,22 @@ export function UserRegistry({
             </div>
 
             <div className="bg-muted/40 border-border flex justify-end gap-3 border-t px-6 py-4">
-              <button
+              <Button
                 type="button"
-                disabled={isPending}
+                variant="outline"
+                disabled={isTogglingActive}
                 onClick={() => setDeactivatingUser(null)}
-                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="h-9 px-4 text-xs font-semibold"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                disabled={isPending}
+                disabled={isTogglingActive}
                 onClick={confirmDeactivation}
-                className="focus-visible:ring-ring inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="bg-rose-600 px-4 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 disabled:pointer-events-none disabled:opacity-50"
               >
-                {isPending ? (
+                {isTogglingActive ? (
                   <>
                     <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                     Deactivating...
@@ -364,7 +291,7 @@ export function UserRegistry({
                 ) : (
                   'Deactivate User'
                 )}
-              </button>
+              </Button>
             </div>
           </dialog>
         </div>
@@ -376,7 +303,10 @@ export function UserRegistry({
           <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden duration-200">
             <UserForm
               onClose={() => setIsAddUserOpen(false)}
-              onSuccess={() => setIsAddUserOpen(false)}
+              onSuccess={() => {
+                setIsAddUserOpen(false);
+                router.refresh();
+              }}
             />
           </div>
         </div>
@@ -389,11 +319,182 @@ export function UserRegistry({
             <UserForm
               user={editingUser}
               onClose={() => setEditingUser(null)}
-              onSuccess={() => setEditingUser(null)}
+              onSuccess={() => {
+                setEditingUser(null);
+                router.refresh();
+              }}
             />
           </div>
         </div>
       )}
     </>
+  );
+}
+
+/* eslint-disable no-unused-vars */
+interface UserRegistryRowProps {
+  readonly usr: User;
+  readonly currentUserId: string | null | undefined;
+  readonly currentUserRole: string | null | undefined;
+  readonly isTogglingActive: boolean;
+  readonly deactivatingUser: User | null;
+  readonly mounted: boolean;
+  readonly setEditingUser: (usr: User) => void;
+  readonly handleToggleActive: (usr: User) => void;
+}
+/* eslint-enable no-unused-vars */
+
+function formatJoinedDate(createdAt: string, mounted: boolean) {
+  if (!mounted) return <CustomSpinner />;
+  return (
+    <div className="flex items-center gap-1">
+      <Calendar className="h-3 w-3 shrink-0" />
+      <span>
+        {new Date(createdAt).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}
+      </span>
+    </div>
+  );
+}
+
+function UserRegistryRow({
+  usr,
+  currentUserId,
+  currentUserRole,
+  isTogglingActive,
+  deactivatingUser,
+  mounted,
+  setEditingUser,
+  handleToggleActive,
+}: UserRegistryRowProps) {
+  const isSelf = usr.id === currentUserId;
+  const isDeactivating = isTogglingActive && deactivatingUser?.id === usr.id;
+
+  // Extract action buttons to avoid nested conditional JSX (SonarQube compliance)
+  let primaryButton = <div className="w-20 shrink-0" />;
+  if (currentUserRole === 'admin') {
+    primaryButton = (
+      <Button
+        variant="outline"
+        disabled={isTogglingActive}
+        onClick={() => setEditingUser(usr)}
+        className="focus-visible:ring-ring flex h-8 w-20 shrink-0 items-center justify-center border-emerald-500/20 bg-emerald-500/10 text-[11px] font-semibold text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+      >
+        <Pencil className="mr-1 h-3 w-3 shrink-0" />
+        <span>Edit</span>
+      </Button>
+    );
+  }
+
+  let secondaryButton = <div className="w-28 shrink-0" />;
+  if (currentUserRole === 'admin' && !isSelf) {
+    let buttonContent;
+    if (isDeactivating) {
+      buttonContent = <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />;
+    } else if (usr.active) {
+      buttonContent = (
+        <>
+          <UserX className="mr-1 h-3.5 w-3.5 shrink-0" />
+          <span>Deactivate</span>
+        </>
+      );
+    } else {
+      buttonContent = (
+        <>
+          <UserCheck className="mr-1 h-3.5 w-3.5 shrink-0" />
+          <span>Activate</span>
+        </>
+      );
+    }
+
+    secondaryButton = (
+      <Button
+        disabled={isTogglingActive}
+        onClick={() => handleToggleActive(usr)}
+        className={cn(
+          'focus-visible:ring-ring flex h-8 w-28 shrink-0 items-center justify-center border text-[11px] font-medium shadow-sm transition-all focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50',
+          usr.active
+            ? 'border-rose-500/20 bg-rose-500/10 text-rose-600 hover:bg-rose-600 hover:text-white'
+            : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white'
+        )}
+      >
+        {buttonContent}
+      </Button>
+    );
+  }
+
+  return (
+    <TableRow className="hover:bg-accent/40 h-16">
+      <TableCell className="w-[35%] font-medium">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-semibold shadow-sm transition-all duration-300 ${
+              usr.active
+                ? 'bg-primary/10 text-primary border-primary/20'
+                : 'bg-muted text-muted-foreground border-muted-foreground/20'
+            }`}
+          >
+            {getAvatarPlaceholder(usr.name)}
+          </div>
+          <div className="min-w-0">
+            <div
+              className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+                usr.active
+                  ? 'text-foreground hover:text-primary'
+                  : 'text-muted-foreground line-through'
+              }`}
+            >
+              <span className="truncate">{usr.name}</span>
+              {isSelf && (
+                <span className="bg-primary/25 border-primary/30 text-primary py-0.2 shrink-0 rounded-full border px-1.5 text-[9px] tracking-normal normal-case">
+                  You
+                </span>
+              )}
+            </div>
+            <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
+              <Mail className="h-3 w-3 shrink-0" />
+              <span className="truncate">{usr.email}</span>
+            </span>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="w-[15%]">
+        <span
+          className={cn(
+            'inline-flex h-6 w-24 shrink-0 items-center justify-center gap-1 rounded-full border text-[10px] font-semibold uppercase',
+            getRoleBadgeStyles(usr.role)
+          )}
+        >
+          <Shield className="h-3 w-3 shrink-0" />
+          <span>{usr.role}</span>
+        </span>
+      </TableCell>
+      <TableCell className="w-[12%]">
+        <span
+          className={cn(
+            'inline-flex h-6 w-24 shrink-0 items-center justify-center gap-1 rounded-full border text-[10px] font-semibold uppercase',
+            usr.active
+              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
+              : 'border-rose-500/20 bg-rose-500/10 text-rose-500'
+          )}
+        >
+          <span>{usr.active ? 'Active' : 'Inactive'}</span>
+        </span>
+      </TableCell>
+      <TableCell className="w-[18%]">
+        <div className="text-muted-foreground flex items-center gap-1 text-xs">
+          {formatJoinedDate(usr.created_at, mounted)}
+        </div>
+      </TableCell>
+      <TableCell className="w-[20%] pr-4 text-right">
+        <div className="flex justify-end gap-2">
+          {primaryButton}
+          {secondaryButton}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

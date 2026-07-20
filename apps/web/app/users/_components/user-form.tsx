@@ -1,9 +1,17 @@
 'use client';
 
-import { useActionState, useEffect, useRef, ReactNode } from 'react';
+import { FormAlertMessage } from '@/app/_shared/form-alert-message';
+import { FormEvent, useEffect, useState, type ChangeEvent } from 'react';
 import { Button } from '@repo/ui/components/ui/button';
 import { Input } from '@repo/ui/components/ui/input';
 import { Label } from '@repo/ui/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/components/ui/select';
 import {
   Card,
   CardContent,
@@ -11,23 +19,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
-import { UserPlus, Loader2, AlertCircle, CheckCircle, X } from 'lucide-react';
-import type { Tables } from '@repo/types';
-import { ActionState } from '@/lib/server-actions';
-import { createUser, updateUser } from './actions';
-
-type DbUser = Tables<'users'>;
-
-const initialState: ActionState = {
-  success: false,
-  error: null,
-};
+import {
+  UserPlus,
+  Loader2,
+  X,
+} from '@repo/ui/lib/icons';
+import type { User } from '../_services/users.service';
+import { createUser, updateUser } from '../_services/users.service';
 
 interface UserFormProps {
-  readonly user?: DbUser;
+  readonly user?: User;
   readonly onClose?: () => void;
   readonly onSuccess?: () => void;
 }
+
 
 export function UserForm({
   user,
@@ -35,24 +40,75 @@ export function UserForm({
   onSuccess,
 }: Readonly<UserFormProps>) {
   const isEdit = !!user;
-  const [state, formAction, isPending] = useActionState(
-    isEdit ? updateUser : createUser,
-    initialState
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const [name, setName] = useState(user?.name ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [role, setRole] = useState<'admin' | 'manager' | 'member'>(
+    user?.role ?? 'member'
   );
-  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setIsSubmitting(true);
+    setMessage(null);
+    setIsError(false);
+
+    if (!name.trim() || (!isEdit && !email.trim()) || !role) {
+      setMessage('Name, email, and role are required.');
+      setIsError(true);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      if (isEdit) {
+        await updateUser(user.id, {
+          name: name.trim(),
+          role,
+        });
+        setMessage(`User details updated successfully!`);
+      } else {
+        const origin =
+          process.env.NEXT_PUBLIC_SITE_URL || globalThis.location.origin;
+        const redirectToUrl = `${origin.replace(/\/$/, '')}/auth/callback?next=${encodeURIComponent('/reset-password')}`;
+
+        await createUser({
+          name: name.trim(),
+          email: email.trim(),
+          role,
+          redirectTo: redirectToUrl,
+        });
+        setMessage(`User added successfully! Sending invitation...`);
+      }
+
+      setIsSuccess(true);
+    } catch (error) {
+      const modeText = isEdit ? 'update' : 'add';
+      const errorMessage =
+        error instanceof Error ? error.message : `Failed to ${modeText} user.`;
+      setMessage(errorMessage);
+      setIsError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
-    if (state.success) {
-      formRef.current?.reset();
+    if (isSuccess) {
       const timer = setTimeout(() => {
         onSuccess?.();
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [state.success, onSuccess]);
+  }, [isSuccess, onSuccess]);
 
-  let submitButtonText: ReactNode;
-  if (isPending) {
+  let submitButtonText;
+  if (isSubmitting) {
     submitButtonText = (
       <>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -68,14 +124,16 @@ export function UserForm({
   return (
     <Card className="relative border border-gray-200 bg-white text-gray-900 shadow-xl transition-all duration-300 hover:shadow-2xl">
       {onClose && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className="hover:bg-muted text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer rounded-full p-1.5 transition-colors"
+          className="text-muted-foreground absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full transition-colors"
           aria-label="Close modal"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       )}
 
       <CardHeader className="space-y-1.5 pb-4">
@@ -90,9 +148,7 @@ export function UserForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form ref={formRef} action={formAction} className="space-y-4">
-          {isEdit && <input type="hidden" name="id" value={user.id} />}
-
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
               Full Name
@@ -102,7 +158,10 @@ export function UserForm({
               name="name"
               placeholder="Erlich Bachman"
               required
-              defaultValue={user?.name}
+              value={name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setName(e.target.value)
+              }
               className="bg-background/80 focus-visible:ring-primary border-input focus:border-primary h-10 transition-colors"
             />
           </div>
@@ -117,7 +176,10 @@ export function UserForm({
               type="email"
               placeholder="erlich@bachmanity.com"
               required={!isEdit}
-              defaultValue={user?.email}
+              value={email}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               disabled={isEdit}
               className="bg-background/80 focus-visible:ring-primary border-input focus:border-primary h-10 transition-colors disabled:opacity-50"
             />
@@ -128,52 +190,41 @@ export function UserForm({
               Workspace Role
             </Label>
             <div className="relative">
-              <select
-                id="role"
-                name="role"
-                required
-                defaultValue={user?.role ?? 'member'}
-                className="bg-background/80 border-input text-foreground focus:border-primary focus:ring-primary ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              <Select
+                value={role}
+                onValueChange={(val) =>
+                  setRole(val as 'admin' | 'manager' | 'member')
+                }
               >
-                <option value="member">Member</option>
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
-              </select>
+                <SelectTrigger id="role" className="bg-background/80 h-10">
+                  <SelectValue placeholder="Select role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {state.error && (
-            <div className="text-destructive bg-destructive/10 border-destructive/20 flex items-center gap-2 rounded-lg border p-3 text-sm">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{state.error}</span>
-            </div>
-          )}
-
-          {state.success && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-500">
-              <CheckCircle className="h-4 w-4 shrink-0" />
-              <span>
-                {isEdit
-                  ? 'User details updated successfully!'
-                  : 'User added successfully! Sending invitation...'}
-              </span>
-            </div>
-          )}
+          <FormAlertMessage message={message} isError={isError} />
 
           <div className="flex gap-3 pt-2">
             {onClose && (
-              <button
+              <Button
                 type="button"
-                disabled={isPending || state.success}
+                variant="outline"
+                disabled={isSubmitting || isSuccess}
                 onClick={onClose}
-                className="border-input bg-background hover:bg-accent text-foreground flex w-1/3 cursor-pointer items-center justify-center rounded-md border text-sm font-semibold shadow-sm transition-all duration-300"
+                className="w-1/3"
               >
                 Cancel
-              </button>
+              </Button>
             )}
             <Button
               type="submit"
-              disabled={isPending || state.success}
+              disabled={isSubmitting || isSuccess}
               className={`${onClose ? 'w-2/3' : 'w-full'}`}
             >
               {submitButtonText}

@@ -11,8 +11,11 @@ import {
   Music,
   Timer,
   Files,
-  Code,
-} from 'lucide-react';
+  ClipboardPenIcon,
+  Kanban,
+  ListTodo,
+  User,
+} from '@repo/ui/lib/icons';
 import { cn } from '@repo/ui/lib/utils';
 import {
   Sidebar,
@@ -29,10 +32,12 @@ import {
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/board', label: 'Board', icon: Kanban },
+  { href: '/backlog', label: 'Backlog', icon: ListTodo },
   { href: '/users', label: 'Users', icon: Users },
   { href: '/projects', label: 'Projects', icon: FolderKanban },
   { href: '/sprints', label: 'Sprints', icon: Timer },
-  { href: '/attributes', label: 'Attributes', icon: Code },
+  { href: '/work-items', label: 'Work Items', icon: ClipboardPenIcon },
   { href: '/files', label: 'Files', icon: Files },
   { href: '/instruments', label: 'Instruments', icon: Music },
   { href: '/member', label: 'My Work', icon: CircleDot },
@@ -87,6 +92,19 @@ export function DashboardSidebar() {
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={
+                    pathname === '/profile' || pathname.startsWith('/profile/')
+                  }
+                >
+                  <Link href="/profile">
+                    <User />
+                    <span>Profile</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton disabled tooltip="Coming soon">
                   <Settings />
